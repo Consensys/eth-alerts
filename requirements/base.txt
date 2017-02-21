@@ -3,6 +3,10 @@ Django==1.10.5
 # environment handling
 django-environ==0.4.0
 
+# Test helpers
+fake-factory==0.5.3
+factory_boy==2.5.2
+
 coreapi==2.2.4
 coreschema==0.0.4
 django-authtools==1.5.0
