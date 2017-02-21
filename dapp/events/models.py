@@ -16,7 +16,7 @@ class EventName(TimeStampedModel):
 
 class Event(TimeStampedModel):
     """
-    Base Event Class
+    Event Class
     """
     name = models.ForeignKey(EventName, blank=True, null=True)
     contract = models.ForeignKey(Contract)

@@ -3,77 +3,56 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from events.models import (EventName, EventValue, Event, Email, Alert)
 from contracts.models import Contract
-from dapp.contracts import factories
+from dapp.contracts.factories import ContractFactory
+from dapp.events.factories import (EventNameFactory, EventFactory, EventValueFactory, EmailFactory)
 import uuid
 
 
 class TestEvent(TestCase):
 
     def test_create_event_name(self):
-        event = EventName()
-        event.name = 'Test1'
-        event.save()
+        factory = EventNameFactory()
+        factory.save()
 
-        e = EventName.objects.get(name='Test1')
-        self.assertEquals(e.name, 'Test1')
+        event = EventName.objects.get(name=factory.name)
+        self.assertEquals(event.name, factory.name)
         self.assertRaises(EventName.DoesNotExist, EventName.objects.get, name='Test2')
 
     def test_create_event(self):
-        factory = factories.ContractFactory()
-
-        contract = Contract()
-        contract.address = factory.address
-        contract.abi = factory.abi
+        contract = ContractFactory()
         contract.save()
 
-        event_name = EventName()
-        event_name.name = 'TestEvent'
+        event_name = EventNameFactory()
         event_name.save()
 
-        event = Event()
-        event.name = event_name
-        event.contract = contract
+        event = EventFactory()
         event.save()
 
         check_event = Event.objects.get(pk=event.id)
         self.assertEquals(check_event.name.name, event_name.name)
         self.assertEquals(check_event.contract.address, contract.address)
 
-        event_value = EventValue()
-        event_value.property = 'property'
-        event_value.value = '1'
-        event_value.event = event
+        event_value = EventValueFactory()
         event_value.save()
 
-        check_event_value = EventValue.objects.get(event__id=event.id)
+        check_event_value = EventValue.objects.get(event__id=event_value.event.id)
         self.assertEquals(check_event_value.property, event_value.property)
 
     def test_create_alert(self):
 
-        factory = factories.ContractFactory()
-
-        contract = Contract()
-        contract.address = factory.address
-        contract.abi = factory.abi
+        contract = ContractFactory()
         contract.save()
 
-        event_name = EventName()
-        event_name.name = 'TestEvent'
+        event_name = EventNameFactory()
         event_name.save()
 
-        event = Event()
-        event.name = event_name
-        event.contract = contract
+        event = EventFactory()
         event.save()
 
-        event_value = EventValue()
-        event_value.property = 'property'
-        event_value.value = '1'
-        event_value.event = event
+        event_value = EventValueFactory()
         event_value.save()
 
-        email = Email()
-        email.email = 'giacomo.licari@gmail.com'
+        email = EmailFactory()
         email.save()
 
         alert = Alert()

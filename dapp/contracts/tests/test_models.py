@@ -23,7 +23,6 @@ class TestContract(TestCase):
         self.assertEquals(TestContract.factory.address, contract.address)
         self.assertEquals(Contract.objects.get(pk=contract.id).address, contract.address)
 
-
     def test_update(self):
         contract = Contract()
         contract.address = TestContract.factory.address
