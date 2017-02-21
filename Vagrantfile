@@ -45,7 +45,7 @@ SCRIPT
 
 $requirements = <<SCRIPT
 pip install --upgrade pip
-pip install -r /vagrant/requirements/test.txt
+pip install -r /vagrant/requirements/production.txt
 SCRIPT
 
 $postgresql = <<SCRIPT
@@ -61,7 +61,7 @@ fi
 SCRIPT
 
 $migrate = <<SCRIPT
-    cd /vagrant/factserver/
+    cd /vagrant/dapp
     python manage.py migrate
 SCRIPT
 
