@@ -19,7 +19,6 @@ class Event(TimeStampedModel):
     Base Event Class
     """
     name = models.ForeignKey(EventName, blank=True, null=True)
-    #values = models.OneToMany(EventValue)
     contract = models.ForeignKey(Contract)
 
 
@@ -41,4 +40,4 @@ class Alert(TimeStampedModel):
     event = models.ForeignKey(Event)
     name = models.TextField()
     is_confirmed = models.BooleanField()
-    confirmation_key = models.IntegerField()
+    confirmation_key = models.TextField() #models.IntegerField()
