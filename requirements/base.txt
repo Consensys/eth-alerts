@@ -1,0 +1,4 @@
+Django==1.10.5
+
+# environment handling
+django-environ==0.4.0
