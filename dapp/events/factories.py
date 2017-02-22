@@ -40,3 +40,21 @@ class EmailFactory(factory.DjangoModelFactory):
         model = models.Email
 
     email = faker.email()
+
+
+class AlertFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.Alert
+
+    email = factory.SubFactory(EmailFactory)
+    event = factory.SubFactory(EventFactory)
+    name = faker.name()
+    is_confirmed = True
+    confirmation_key = faker.name()
+    delete_key = faker.name()
+
+    @factory.LazyAttribute
+    def abi(self):
+        abi_json = '[{"inputs": [{"type": "uint256", "name": ""}], "constant": true}]'
+        return abi_json

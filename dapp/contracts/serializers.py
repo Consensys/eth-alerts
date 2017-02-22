@@ -9,14 +9,15 @@ class ContractSerializer(serializers.Serializer):
 
     class Meta:
         fields = [
-            'address',
-            'abi'
+            'address'
         ]
 
     address = serializers.CharField()
-    abi = serializers.CharField()
 
     def validate(self, data):
+
+        json_data = None
+
         try:
             json_data = simplejson.loads(data)
         except:
@@ -24,13 +25,6 @@ class ContractSerializer(serializers.Serializer):
 
         if json_data.get('address') is None:
             raise serializers.ValidationError('missing field address')
-
-        if json_data.get('abi') is None:
-            raise serializers.ValidationError('missing field abi')
-        else:
-            if not isinstance(json_data.get('abi'), list):
-                raise serializers.ValidationError('field abi must be a JSON Array')
-
 
         # Check if contract exists
         contract = Contract.objects.get(address=json_data.get('address'))

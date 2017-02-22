@@ -9,4 +9,3 @@ class Contract(TimeStampedModel):
     Contract Class
     """
     address = models.TextField()
-    abi = models.TextField()

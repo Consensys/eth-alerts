@@ -16,7 +16,6 @@ class TestContract(TestCase):
     def test_create(self):
         contract = Contract()
         contract.address = TestContract.factory.address
-        contract.abi = simplejson.loads(TestContract.factory.abi)
         contract.save()
 
         self.assertIsNotNone(contract)
@@ -26,7 +25,6 @@ class TestContract(TestCase):
     def test_update(self):
         contract = Contract()
         contract.address = TestContract.factory.address
-        contract.abi = simplejson.loads(TestContract.factory.abi)
         contract.save()
 
         update_contract = Contract.objects.get(pk=contract.id)

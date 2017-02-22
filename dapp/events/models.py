@@ -4,8 +4,6 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 from contracts.models import Contract
 
-# Create your models here.
-
 
 class EventName(TimeStampedModel):
     """
@@ -28,7 +26,7 @@ class EventValue(TimeStampedModel):
     """
     property = models.TextField()
     value = models.TextField()
-    event = models.ForeignKey(Event)
+    event = models.ForeignKey(Event, related_name='values')
 
 
 class Email(TimeStampedModel):
@@ -36,8 +34,10 @@ class Email(TimeStampedModel):
 
 
 class Alert(TimeStampedModel):
+    abi = models.TextField()
     email = models.ForeignKey(Email)
     event = models.ForeignKey(Event)
     name = models.TextField()
     is_confirmed = models.BooleanField()
-    confirmation_key = models.TextField() #models.IntegerField()
+    confirmation_key = models.TextField()
+    delete_key = models.TextField()
