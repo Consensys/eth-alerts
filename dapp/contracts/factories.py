@@ -1,5 +1,4 @@
 import factory
-from factory import fuzzy
 from faker import Factory as FakerFactory
 from contracts import models
 
