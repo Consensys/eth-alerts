@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 from django.conf import settings
 from mail_templated import EmailMessage
+import hashlib
+import random
 
 
 def send_email(template_name, context, email_to):
@@ -11,3 +13,7 @@ def send_email(template_name, context, email_to):
     message.from_email = settings.SERVER_EMAIL
     message.to= [email_to]
     message.send()
+
+
+def get_SHA256():
+    return hashlib.sha256(str(random.random())).hexdigest()

@@ -12,7 +12,6 @@ class TestEventSerializer(TestCase):
         serialized_object = serializers.EventNameSerializer(event_name)
         self.assertEquals(event_name.name, serialized_object.data.get('name'))
 
-
     def test_event_serializer(self):
         event = factories.EventFactory()
         event_value = factories.EventValueFactory()

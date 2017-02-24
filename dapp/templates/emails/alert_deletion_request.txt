@@ -1,0 +1,11 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% block subject %}
+[{{site.name}}] Alert Deletion
+{% endblock %}
+
+{% block body %}
+
+Message sent to : {{alert.email.email}}
+
+{% endblock %}
