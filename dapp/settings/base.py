@@ -31,7 +31,8 @@ THIRD_PARTY_APPS = (
     'django_extensions',
     'mail_templated',
     'email_log',
-    'authtools'
+    'authtools',
+    'solo',
 )
 
 # Apps specific for this project go here.
@@ -39,6 +40,7 @@ LOCAL_APPS = (
     'events',
     'contracts',
     'api',
+    'eth',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -246,3 +248,8 @@ SWAGGER_SETTINGS = {
     'permission_denied_handler': None,
     'doc_expansion': 'none',
 }
+
+# DJANGO SOLO CONFIGURATION
+# ------------------------------------------------------------------------------
+SOLO_CACHE = 'default'
+SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
