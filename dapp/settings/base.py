@@ -55,9 +55,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'oauth2_provider.middleware.OAuth2TokenMiddleware',
+    #'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
+    #'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 )
 
 # DEBUG
@@ -219,8 +219,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         "django.contrib.auth.models.AnonymousUser",
-        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        #'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
     'COERCE_DECIMAL_TO_STRING': False,
 }

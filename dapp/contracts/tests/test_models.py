@@ -8,31 +8,18 @@ import simplejson
 
 class TestContract(TestCase):
 
-    factory = None
-
-    def setUp(self):
-        TestContract.factory = factories.ContractFactory()
-
     def test_create(self):
-        contract = Contract()
-        contract.address = TestContract.factory.address
-        contract.save()
-
-        self.assertIsNotNone(contract)
-        self.assertEquals(TestContract.factory.address, contract.address)
+        contract = factories.ContractFactory()
+        self.assertIsNotNone(contract.pk)
         self.assertEquals(Contract.objects.get(pk=contract.id).address, contract.address)
 
     def test_update(self):
-        contract = Contract()
-        contract.address = TestContract.factory.address
+        contract = factories.ContractFactory()
+        self.assertEquals(Contract.objects.get(pk=contract.id).address, contract.address)
+        contract.address = '0x0'
         contract.save()
-
-        update_contract = Contract.objects.get(pk=contract.id)
-        update_contract.address = '0x0'
-        update_contract.save()
-
         check_contract = Contract.objects.get(pk=contract.id)
-        self.assertEquals(update_contract.address, check_contract.address)
+        self.assertEquals(contract.address, check_contract.address)
 
 
 

@@ -16,11 +16,19 @@ class TestEventSerializer(TestCase):
         event = factories.EventFactory()
         event_value = factories.EventValueFactory()
         event_value.event = event
-
-        event.save()
         event_value.save()
 
         serialized_event = serializers.EventSerializer(event)
-
         self.assertEquals(serialized_event.data.get('contract').get('address'), event.contract.address)
         self.assertEquals(event_value.event.name.name, serialized_event.data.get('name').get('name'))
+
+    def test_alert_serializer(self):
+        events = [factories.EventFactory() for x in range(0, 2)]
+
+        alert = factories.AlertFactory()
+        alert.events = events
+
+        serialized_alert = serializers.AlertSerializer(alert)
+        self.assertEquals(serialized_alert.data.get('abi'), alert.abi)
+        self.assertEquals(events[0].name.name, serialized_alert.data.get('events')[0].get('name').get('name'))
+

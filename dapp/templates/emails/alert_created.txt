@@ -1,0 +1,12 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% block subject %}
+[{{site.name}}]
+{% endblock %}
+
+{% block body %}
+
+The alert was created.
+Message sent to : {{alert.email.email}}
+
+{% endblock %}

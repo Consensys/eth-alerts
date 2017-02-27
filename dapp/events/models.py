@@ -12,12 +12,28 @@ class EventName(TimeStampedModel):
     name = models.TextField()
 
 
+class Email(TimeStampedModel):
+    email = models.TextField()
+
+
+class Alert(TimeStampedModel):
+    """
+    Alert Class
+    """
+    abi = models.TextField()
+    email = models.ForeignKey(Email)
+    is_confirmed = models.BooleanField()
+    confirmation_key = models.TextField()
+    delete_key = models.TextField()
+
+
 class Event(TimeStampedModel):
     """
     Event Class
     """
     name = models.ForeignKey(EventName, blank=True, null=True)
     contract = models.ForeignKey(Contract)
+    alert = models.ForeignKey(Alert, related_name='events')
 
 
 class EventValue(TimeStampedModel):
@@ -27,17 +43,3 @@ class EventValue(TimeStampedModel):
     property = models.TextField()
     value = models.TextField()
     event = models.ForeignKey(Event, related_name='values')
-
-
-class Email(TimeStampedModel):
-    email = models.TextField()
-
-
-class Alert(TimeStampedModel):
-    abi = models.TextField()
-    email = models.ForeignKey(Email)
-    event = models.ForeignKey(Event)
-    name = models.TextField()
-    is_confirmed = models.BooleanField()
-    confirmation_key = models.TextField()
-    delete_key = models.TextField()
