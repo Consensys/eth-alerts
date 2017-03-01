@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url
-from . import views
+from dapp.api import views
 
 urlpatterns = [
     url(r'^alert/$', views.AlertView.as_view(), name='alert'),

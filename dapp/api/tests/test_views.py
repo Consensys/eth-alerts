@@ -9,6 +9,7 @@ from events.models import Alert
 from django.core import mail
 from api.factories import APIFactory
 
+
 class TestAlertView(APITestCase):
 
     def setUp(self):
@@ -22,7 +23,6 @@ class TestAlertView(APITestCase):
 
         r = self.client.post(reverse('api:alert'), data=dumps(data), content_type='application/json')
         self.assertEqual(status.HTTP_201_CREATED, r.status_code)
-
         count_after = alerts = Alert.objects.all().count()
         num_emails_ater = len(mail.outbox)
 
@@ -61,6 +61,16 @@ class TestAlertView(APITestCase):
 
         self.assertEqual(0, Alert.objects.filter(confirmation_key=creation_response.data['confirmation_key']).count())
 
+    def test_confirm_fails(self):
+
+        # Creation
+        data = self.factory.creation_data
+        creation_response = self.client.post(reverse('api:alert'), data=dumps(data), content_type='application/json')
+        # Confirmation
+        url = (reverse('api:alert-confirm', kwargs={'confirmation_key':False}))
+        confirmation_response = self.client.get(url, content_type='application/json')
+        self.assertEquals(confirmation_response.status_code, 400)
+
     def test_delete_send_email_and_confirm(self):
 
         delete_data = self.factory.deletion_data
@@ -80,6 +90,46 @@ class TestAlertView(APITestCase):
         self.assertEqual(status.HTTP_200_OK, deletion_response.status_code)
         with self.assertRaises(Alert.DoesNotExist):
             Alert.DoesNotExist, Alert.objects.get(delete_key=delete_key)
+
+    def test_delete_fails(self):
+        delete_data = self.factory.deletion_data
+        create_data = self.factory.creation_data
+
+        delete_data['address'] = None
+
+        r_create = self.client.post(reverse('api:alert'), data=dumps(create_data), content_type='application/json')
+        r_delete = self.client.delete(reverse('api:alert-delete'), data=dumps(delete_data), content_type='application/json')
+
+        self.assertEquals(r_delete.status_code, 400)
+
+    def test_get_alert(self):
+        create_data = self.factory.creation_data.copy()
+        create_data2 = self.factory.creation_data.copy()
+        create_data3 = self.factory.creation_data.copy()
+
+        create_data2['events'] = {'event2': {'eventProperty2': 'eventValue2'}}
+
+        get_data = {'email': create_data['email']}
+
+        r_create = self.client.post(reverse('api:alert'), data=dumps(create_data), content_type='application/json')
+        r_create2 = self.client.post(reverse('api:alert'), data=dumps(create_data2), content_type='application/json')
+        r_get = self.client.get(reverse('api:alert'), get_data, content_type='application/json')
+
+        self.assertEquals(status.HTTP_200_OK, r_get.status_code)
+        self.assertEquals(len(r_get.data[create_data['contract']]), 2)
+        self.assertEquals(r_get.data[create_data['contract']][1]['values'][0], create_data2['events']['event2'])
+
+    def test_get_alert_no_events(self):
+        create_data = self.factory.creation_data.copy()
+        create_data['events'] = {}
+        get_data = {'email': create_data['email']}
+
+        r_create = self.client.post(reverse('api:alert'), data=dumps(create_data), content_type='application/json')
+        r_get = self.client.get(reverse('api:alert'), get_data, content_type='application/json')
+
+        self.assertEquals(status.HTTP_200_OK, r_get.status_code)
+        self.assertEquals(len(r_get.data[create_data['contract']]), 1)
+        self.assertEquals(r_get.data[create_data['contract']][0]['values'], [])
 
 
 

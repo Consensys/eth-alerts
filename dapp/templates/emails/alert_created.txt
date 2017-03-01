@@ -6,7 +6,7 @@
 
 {% block body %}
 
-The alert was created.
-Message sent to : {{alert.email.email}}
+A new alert was created. Please confirm its creation by clicking on the
+following url: <a href='{{url}}'>confirm</a>.
 
 {% endblock %}

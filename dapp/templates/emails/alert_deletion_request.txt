@@ -6,6 +6,7 @@
 
 {% block body %}
 
-Message sent to : {{alert.email.email}}
+An Alert deletion request was sent. Please confirm it by clicking on the
+following url: <a href='{{url}}'>confirm</a>.
 
 {% endblock %}

@@ -19,13 +19,13 @@ from events.serializers import (
 from contracts.serializers import ContractSerializer
 from api.utils import get_SHA256
 
+
 class AlertAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
         fields = '__all__'
 
-    # contract = ContractSerializer()
     abi = serializers.ListField()
     email = EmailSerializer()
     events = EventSerializer(many=True)
@@ -113,31 +113,38 @@ class AlertAPISerializer(serializers.ModelSerializer):
         alert_obj.delete_key = get_SHA256()
         alert_obj.save()
 
-        for event in validated_data.get('events'):
-            # EventName object
-            try:
-                eventname_obj = EventName.objects.get(name=event.get('name').get('name'))
-            except EventName.DoesNotExist:
-                eventname_obj = EventName.objects.create(**event.get('name'))
+        if validated_data.get('events'):
+            for event in validated_data.get('events'):
+                # EventName object
+                try:
+                    eventname_obj = EventName.objects.get(name=event.get('name').get('name'))
+                except EventName.DoesNotExist:
+                    eventname_obj = EventName.objects.create(**event.get('name'))
 
 
-            try:
-                event_obj = Event.objects.get(contract=contract_obj, name=eventname_obj)
-            except Event.DoesNotExist:
-                # Event Object
-                event_obj = Event()
-                event_obj.name = eventname_obj
-                event_obj.contract = contract_obj
-                event_obj.alert = alert_obj
-                event_obj.save()
+                try:
+                    event_obj = Event.objects.get(contract=contract_obj, name=eventname_obj)
+                except Event.DoesNotExist:
+                    # Event Object
+                    event_obj = Event()
+                    event_obj.name = eventname_obj
+                    event_obj.contract = contract_obj
+                    event_obj.alert = alert_obj
+                    event_obj.save()
 
-            for value in event.get('values'):
-                # Event Value object
-                eventvalue_obj = EventValue()
-                eventvalue_obj.property = value.get('property')
-                eventvalue_obj.value = value.get('value')
-                eventvalue_obj.event = event_obj
-                eventvalue_obj.save()
+                for value in event.get('values'):
+                    # Event Value object
+                    eventvalue_obj = EventValue()
+                    eventvalue_obj.property = value.get('property')
+                    eventvalue_obj.value = value.get('value')
+                    eventvalue_obj.event = event_obj
+                    eventvalue_obj.save()
+        else:
+            event_obj = Event()
+            event_obj.name = None
+            event_obj.contract = contract_obj
+            event_obj.alert = alert_obj
+            event_obj.save()
 
         return alert_obj
 

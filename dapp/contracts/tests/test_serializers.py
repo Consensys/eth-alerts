@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.test import TestCase
-from dapp.contracts import factories
+from contracts import factories
 from contracts import serializers
 from contracts.models import Contract
 import simplejson

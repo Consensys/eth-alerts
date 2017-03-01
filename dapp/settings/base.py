@@ -84,7 +84,8 @@ ADMINS = (
 DATABASES = {
     # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
     'default': env.db(
-        default="postgresql://fs:123456@localhost/fs"
+        default="postgresql://fs:123456@localhost/fs",
+        engine="django.db.backends.postgresql"
     ),
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
