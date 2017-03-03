@@ -2,37 +2,33 @@ from __future__ import unicode_literals
 
 from django.db import models
 from model_utils.models import TimeStampedModel
-from contracts.models import Contract
 
 
-class EventName(TimeStampedModel):
+class User(TimeStampedModel):
     """
-    Event Name Class
+    User class
     """
-    name = models.TextField()
-
-
-class Email(TimeStampedModel):
-    email = models.TextField()
+    email = models.TextField(unique=True)
+    authentication_code = models.TextField()
 
 
 class Alert(TimeStampedModel):
     """
     Alert Class
     """
+    class Meta:
+        unique_together = ('user', 'contract')
+
+    user = models.ForeignKey(User)
     abi = models.TextField()
-    email = models.ForeignKey(Email)
-    is_confirmed = models.BooleanField()
-    confirmation_key = models.TextField()
-    delete_key = models.TextField()
+    contract = models.TextField()
 
 
 class Event(TimeStampedModel):
     """
     Event Class
     """
-    name = models.ForeignKey(EventName, blank=True, null=True)
-    contract = models.ForeignKey(Contract)
+    name = models.TextField()
     alert = models.ForeignKey(Alert, related_name='events')
 
 

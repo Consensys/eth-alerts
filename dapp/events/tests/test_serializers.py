@@ -5,30 +5,46 @@ from dapp.events import factories
 from events import serializers
 
 
-class TestEventSerializer(TestCase):
+class TestSerializers(TestCase):
 
-    def test_event_name_serializer(self):
-        event_name = factories.EventNameFactory()
-        serialized_object = serializers.EventNameSerializer(event_name)
-        self.assertEquals(event_name.name, serialized_object.data.get('name'))
+    def test_user_serializer(self):
+        user = factories.UserFactory()
+        serialized_user = serializers.UserSerializer(user)
+        self.assertIsNotNone(serialized_user)
+        self.assertEquals(serialized_user.data.get('email'), user.email)
+        self.assertEquals(serialized_user.data.get('authentication_code'), user.authentication_code)
+
+        user_dict = {'email': None, 'authentication_code': user.authentication_code}
+        serialized_user_fail = serializers.UserSerializer(data=user_dict)
+        self.assertFalse(serialized_user_fail.is_valid())
+        user_dict['email'] = user.email
+        serialized_user_success = serializers.UserSerializer(data=user_dict)
+        self.assertTrue(serialized_user_success)
 
     def test_event_serializer(self):
-        event = factories.EventFactory()
         event_value = factories.EventValueFactory()
-        event_value.event = event
-        event_value.save()
-
+        event = event_value.event
         serialized_event = serializers.EventSerializer(event)
-        self.assertEquals(serialized_event.data.get('contract').get('address'), event.contract.address)
-        self.assertEquals(event_value.event.name.name, serialized_event.data.get('name').get('name'))
+        self.assertEquals(serialized_event.data.get('alert'), event.alert.id)
+        self.assertEquals(event_value.event.name, serialized_event.data.get('name'))
 
     def test_alert_serializer(self):
-        events = [factories.EventFactory() for x in range(0, 2)]
-
         alert = factories.AlertFactory()
-        alert.events = events
-
         serialized_alert = serializers.AlertSerializer(alert)
-        self.assertEquals(serialized_alert.data.get('abi'), alert.abi)
-        self.assertEquals(events[0].name.name, serialized_alert.data.get('events')[0].get('name').get('name'))
+        self.assertEquals(serialized_alert.data.get('contract'), alert.contract)
+        self.assertIsNotNone(serialized_alert.data.get('user').get('authentication_code'))
+        self.assertEquals(serialized_alert.data.get('user').get('authentication_code'), alert.user.authentication_code)
+
+        alert_dict = {
+            'user': {
+                'email': 't@t.it',
+                'authentication_code': alert.user.authentication_code
+            },
+            'abi': alert.abi,
+            'contract': alert.contract
+        }
+
+        self.assertTrue(serializers.AlertSerializer(data=alert_dict).is_valid())
+        alert_dict['contract'] = None
+        self.assertFalse(serializers.AlertSerializer(data=alert_dict).is_valid())
 

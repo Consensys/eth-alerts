@@ -1,6 +1,5 @@
 import factory
 from faker import Factory as FakerFactory
-from dapp.contracts.factories import ContractFactory
 from events import models
 import random
 import hashlib
@@ -9,20 +8,13 @@ faker = FakerFactory.create()
 randomSHA256 = lambda:hashlib.sha256(str(random.random())).hexdigest()
 
 
-class EventNameFactory(factory.DjangoModelFactory):
+class UserFactory(factory.DjangoModelFactory):
 
     class Meta:
-        model = models.EventName
-
-    name = faker.name()
-
-
-class EmailFactory(factory.DjangoModelFactory):
-
-    class Meta:
-        model = models.Email
+        model = models.User
 
     email = faker.email()
+    authentication_code = randomSHA256()
 
 
 class AlertFactory(factory.DjangoModelFactory):
@@ -30,12 +22,11 @@ class AlertFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Alert
 
-    email = factory.SubFactory(EmailFactory)
-    #event = factory.SubFactory(EventFactory)
-    #name = faker.name()
-    is_confirmed = True
-    confirmation_key = randomSHA256()
-    delete_key = randomSHA256()
+    user = factory.SubFactory(UserFactory)
+
+    @factory.LazyAttribute
+    def contract(self):
+        return "0x6ca9cd49794d2e0618b9e7a8562948aabe2ef331"
 
     @factory.LazyAttribute
     def abi(self):
@@ -61,9 +52,14 @@ class EventFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Event
 
-    name = factory.SubFactory(EventNameFactory)
-    contract = factory.SubFactory(ContractFactory)
-    alert = factory.SubFactory(AlertFactory)
+    name = faker.name()
+    # alert = factory.SubFactory(AlertFactory)
+
+    @factory.LazyAttribute
+    def alert(self):
+        return AlertFactory()
+
+
 
 
 class EventValueFactory(factory.DjangoModelFactory):

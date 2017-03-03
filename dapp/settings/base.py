@@ -38,7 +38,6 @@ THIRD_PARTY_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'events',
-    'contracts',
     'api',
     'eth',
 )
@@ -98,6 +97,8 @@ CACHES = {
     'default': env.cache(default='locmemcache://')
 }
 
+
+STATIC_URL = '/static/'
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------

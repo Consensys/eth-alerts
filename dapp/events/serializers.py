@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from rest_framework import serializers
-from models import (EventName, EventValue, Event, Email, Alert)
-from contracts.serializers import ContractSerializer
+from models import (User, EventValue, Event, Alert)
 import simplejson
-
-
-class EventNameSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = EventName
-        fields = ('name',)
 
 
 class EventValueSerializer(serializers.ModelSerializer):
@@ -26,20 +18,18 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = (
             'name',
-            'contract',
-            'values'
+            'values',
+            'alert'
         )
 
-    name = EventNameSerializer()
-    contract = ContractSerializer()
     values = EventValueSerializer(many=True)
 
 
-class EmailSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Email
-        fields = ('email',)
+        model = User
+        fields = ('email', 'authentication_code')
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -47,16 +37,14 @@ class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alert
         fields = (
-            'email',
-            'events',
+            'user',
+            # 'events',
             'abi',
-            'is_confirmed',
-            'confirmation_key',
-            'delete_key'
+            'contract'
         )
 
-    email = EmailSerializer()
-    events = EventSerializer(many=True)
+    user = UserSerializer()
+    # events = EventSerializer(many=True)
 
     def validate_abi(self, value):
         try:
