@@ -1,23 +1,47 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from rest_framework import serializers
-from contracts.models import Contract
 from events.models import (
-    EventName,
+    User,
     EventValue,
     Event,
-    Email,
     Alert
 )
 from events.serializers import (
-    EmailSerializer,
+    UserSerializer,
     EventValueSerializer,
-    EventNameSerializer,
     EventSerializer,
     AlertSerializer
 )
-from contracts.serializers import ContractSerializer
 from api.utils import get_SHA256
+
+
+class SignupAPISerializer(serializers.Serializer):
+
+    email = serializers.EmailField()
+    callback = serializers.CharField()
+
+    def create(self, validated_data):
+        user = None
+        try:
+            user = User.objects.get(email=validated_data.get('email'))
+        except User.DoesNotExist:
+            user = User()
+            user.email = validated_data.get('email')
+            user.authentication_code = get_SHA256()
+            user.save()
+
+        user.__dict__['callback'] = validated_data.get('callback').replace('{}', '?authetication_code=%s' % user.authentication_code)
+
+        return user
+
+    def to_representation(self, instance):
+        return {
+            'email': instance.email,
+            'callback': instance.callback
+        }
+
+
 
 
 class AlertAPISerializer(serializers.ModelSerializer):
@@ -27,7 +51,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     abi = serializers.ListField()
-    email = EmailSerializer()
+    # email = EmailSerializer()
     events = EventSerializer(many=True)
 
     def to_internal_value(self, data):
@@ -98,7 +122,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
         email_obj = None
         alert_obj = None
 
-        try:
+        """try:
             contract_obj = Contract.objects.get(address=validated_data.get('contract').get('address'))
         except Contract.DoesNotExist:
             contract_obj = Contract.objects.create(**validated_data.get('contract'))
@@ -146,7 +170,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
             event_obj.alert = alert_obj
             event_obj.save()
 
-        return alert_obj
+        return alert_obj"""
 
 
 class AlertDeleteAPISerializer(serializers.Serializer):

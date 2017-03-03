@@ -9,13 +9,29 @@ from events.models import Alert
 from django.core import mail
 from api.factories import APIFactory
 
-
 class TestAlertView(APITestCase):
 
     def setUp(self):
         self.factory = APIFactory()
 
-    def test_create(self):
+    def test_signup(self):
+        signup_data = self.factory.signup_data
+        response = self.client.post(reverse('api:signup'), data=dumps(signup_data), content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(signup_data.get('email'), response.data.get('email'))
+        self.assertIsNotNone(signup_data.get('callback'))
+
+        signup_fails_data = signup_data.copy()
+        signup_fails_data['email'] = None
+        response_fails = self.client.post(reverse('api:signup'), data=dumps(signup_fails_data), content_type='application/json')
+        self.assertEquals(response_fails.status_code, status.HTTP_400_BAD_REQUEST)
+
+        signup_fails_data = signup_data.copy()
+        signup_fails_data['email'] = 'email_not_valid'
+        response_fails = self.client.post(reverse('api:signup'), data=dumps(signup_fails_data), content_type='application/json')
+        self.assertEquals(response_fails.status_code, status.HTTP_400_BAD_REQUEST)
+
+    """def test_create(self):
 
         count_before = Alert.objects.all().count()
         num_emails_before = len(mail.outbox)
@@ -129,7 +145,7 @@ class TestAlertView(APITestCase):
 
         self.assertEquals(status.HTTP_200_OK, r_get.status_code)
         self.assertEquals(len(r_get.data[create_data['contract']]), 1)
-        self.assertEquals(r_get.data[create_data['contract']][0]['values'], [])
+        self.assertEquals(r_get.data[create_data['contract']][0]['values'], [])"""
 
 
 

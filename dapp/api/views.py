@@ -4,12 +4,23 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from serializers import AlertAPISerializer, AlertDeleteAPISerializer
+from serializers import AlertAPISerializer, AlertDeleteAPISerializer, SignupAPISerializer
 from utils import send_email
-from events.models import Alert, Event
+from events.models import Alert, Event, User
 from api.utils import get_SHA256
 
 from django.core import serializers
+
+
+class SignupView(CreateAPIView):
+
+    serializer_class = SignupAPISerializer
+
+    def handle_exception(self, exc):
+        if not isinstance(exc, ValidationError):
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return super(SignupView, self).handle_exception(exc)
 
 
 class AlertView(CreateAPIView):

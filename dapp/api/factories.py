@@ -1,5 +1,6 @@
 import factory
 from faker import Factory as FakerFactory
+from dapp.events.factories import UserFactory
 import simplejson
 
 faker = FakerFactory.create()
@@ -7,16 +8,25 @@ faker = FakerFactory.create()
 
 class Model(object):
 
-    def __init__(self, abi, deletion_data, creation_data):
+    def __init__(self, abi, deletion_data, creation_data, signup_data, callback, user):
         self.abi = abi
         self.deletion_data = deletion_data
         self.creation_data = creation_data
+        self.signup_data = signup_data
+        self.callback = callback
+        self.user = user
 
 
 class APIFactory(factory.Factory):
 
     class Meta:
         model = Model
+
+    callback = 'https://wallet.gnosis.pm/#/signup{}'
+
+    @factory.LazyAttribute
+    def user(self):
+        return UserFactory()
 
     @factory.LazyAttribute
     def abi(self):
@@ -34,6 +44,11 @@ class APIFactory(factory.Factory):
                    '"type": "address", "name": "instantiation"}], "type": "event", "name": "ContractInstantiation",' \
                    '"anonymous": false}]')
 
+        return data
+
+    @factory.LazyAttribute
+    def signup_data(self):
+        data = dict(email=self.user.email, callback=self.callback)
         return data
 
     @factory.LazyAttribute
