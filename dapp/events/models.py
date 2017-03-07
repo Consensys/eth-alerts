@@ -38,4 +38,4 @@ class EventValue(TimeStampedModel):
     """
     property = models.TextField()
     value = models.TextField()
-    event = models.ForeignKey(Event, related_name='values')
+    event = models.ForeignKey(Event, related_name='values', on_delete=models.CASCADE)

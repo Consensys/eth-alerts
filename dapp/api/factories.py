@@ -58,9 +58,14 @@ class APIFactory(factory.Factory):
         data["contract"] = "0xd79426bcee5b46fde413ededeb38364b3e666097"
         data["email"] = faker.email()
         data["events"] = {
-            "eventName": {
-                "eventPropertyName": "eventPropertyValue"
-            }
+            "eventName1": {
+                "eventPropertyName1_1": "eventPropertyValue1_1",
+                "eventPropertyName1_2": "eventPropertyValue1_2"
+            },
+            "eventName2": {
+                "eventPropertyName2_1": "eventPropertyValue2_1",
+                "eventPropertyName2_2": "eventPropertyValue2_2"
+            },
         }
 
         return data

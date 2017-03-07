@@ -15,6 +15,8 @@ from events.serializers import (
 )
 from api.utils import get_SHA256
 
+from django.db import IntegrityError
+
 
 class SignupAPISerializer(serializers.Serializer):
 
@@ -31,7 +33,7 @@ class SignupAPISerializer(serializers.Serializer):
             user.authentication_code = get_SHA256()
             user.save()
 
-        user.__dict__['callback'] = validated_data.get('callback').replace('{}', '?authetication_code=%s' % user.authentication_code)
+        user.__dict__['callback'] = validated_data.get('callback').replace('{}', '?auth-code=%s' % user.authentication_code)
 
         return user
 
@@ -42,29 +44,19 @@ class SignupAPISerializer(serializers.Serializer):
         }
 
 
-
-
 class AlertAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = '__all__'
+        fields = ('contract', 'abi') #'__all__'
 
+    contract = serializers.CharField()
     abi = serializers.ListField()
-    # email = EmailSerializer()
-    events = EventSerializer(many=True)
+    events = serializers.OrderedDict()
 
     def to_internal_value(self, data):
 
         filtered_data = {}
-
-        # Email
-        if data.get('email'):
-            filtered_data['email'] = {'email' : data.get('email')}
-        else:
-           raise  serializers.ValidationError({
-                'email': 'This field is required.'
-            })
 
         # ABI
         if data.get('abi'):
@@ -81,7 +73,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
         # Contract
         if data.get('contract'):
-            filtered_data['contract'] = {'address' : data.get('contract')}
+            filtered_data['contract'] = data.get('contract')
         else:
             raise serializers.ValidationError({
                 'contract': 'This field is required.'
@@ -91,86 +83,64 @@ class AlertAPISerializer(serializers.ModelSerializer):
         if data.get('events'):
             filtered_data['events'] = []
             events = data.get('events')
-            event = dict()
-            event['contract'] = filtered_data.get('contract')
-            event['values'] = []
+            filtered_events = dict()
 
-            for k,v in events.iteritems():
+            for key,values in events.iteritems():
                 # Event Name
-                event['name'] = {'name' : k}
+                event_name = key
+                filtered_events[event_name] = {}
+                if values:
+                    for innerkey, innervalues in values.iteritems():
+                        filtered_events[event_name][innerkey] = innervalues
 
-                property_key = events[k].keys()[0]
-                value= events[k][property_key]
-
-                event['values'].append({
-                    'property' : property_key,
-                    'value' : value
-                })
-
-            filtered_data['events'].append(event)
+            filtered_data['events'] = filtered_events
 
         else:
-            filtered_data['events'] = None
+            # filtered_data['events'] = None
+            raise serializers.ValidationError({
+                'events': 'This field is required.'
+            })
 
         return filtered_data
 
     def create(self, validated_data):
         # Create the objects
-        contract_obj = None
         eventvalue_obj = None
-        eventname_obj = None
-        email_obj = None
+        event_obj = None
         alert_obj = None
 
-        """try:
-            contract_obj = Contract.objects.get(address=validated_data.get('contract').get('address'))
-        except Contract.DoesNotExist:
-            contract_obj = Contract.objects.create(**validated_data.get('contract'))
-
-        email_obj = Email.objects.create(**validated_data.get('email'))
-
-        alert_obj = Alert()
-        alert_obj.abi = validated_data.get('abi')
-        alert_obj.email = email_obj
-        alert_obj.is_confirmed = False
-        alert_obj.confirmation_key = get_SHA256()
-        alert_obj.delete_key = get_SHA256()
-        alert_obj.save()
+        try:
+            alert_obj = Alert.objects.get(contract=validated_data.get('contract'))
+        except Alert.DoesNotExist:
+            alert_obj = Alert()
+            alert_obj.abi = validated_data.get('abi')
+            alert_obj.user = self.context['request'].user
+            alert_obj.contract = validated_data.get('contract')
+            alert_obj.save()
 
         if validated_data.get('events'):
-            for event in validated_data.get('events'):
-                # EventName object
-                try:
-                    eventname_obj = EventName.objects.get(name=event.get('name').get('name'))
-                except EventName.DoesNotExist:
-                    eventname_obj = EventName.objects.create(**event.get('name'))
+            events_obj = Event.objects.filter(alert=alert_obj.id)
+            events_obj.delete()
 
+            for key in validated_data.get('events'):
+                properties_dict = validated_data.get('events').get(key)
+                event_obj = Event()
+                event_obj.name = key
+                event_obj.alert = alert_obj
+                event_obj.save()
 
-                try:
-                    event_obj = Event.objects.get(contract=contract_obj, name=eventname_obj)
-                except Event.DoesNotExist:
-                    # Event Object
-                    event_obj = Event()
-                    event_obj.name = eventname_obj
-                    event_obj.contract = contract_obj
-                    event_obj.alert = alert_obj
-                    event_obj.save()
-
-                for value in event.get('values'):
+                for propertykey, propertyvalue in properties_dict.iteritems():
                     # Event Value object
                     eventvalue_obj = EventValue()
-                    eventvalue_obj.property = value.get('property')
-                    eventvalue_obj.value = value.get('value')
+                    eventvalue_obj.property = propertykey
+                    eventvalue_obj.value = propertyvalue
                     eventvalue_obj.event = event_obj
                     eventvalue_obj.save()
-        else:
-            event_obj = Event()
-            event_obj.name = None
-            event_obj.contract = contract_obj
-            event_obj.alert = alert_obj
-            event_obj.save()
 
-        return alert_obj"""
+        return alert_obj
+
+    def to_representation(self, instance):
+        return {}
 
 
 class AlertDeleteAPISerializer(serializers.Serializer):

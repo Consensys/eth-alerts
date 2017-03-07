@@ -1,15 +1,14 @@
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from serializers import AlertAPISerializer, AlertDeleteAPISerializer, SignupAPISerializer
+from authentication import AuthCodeAuthentication
 from utils import send_email
 from events.models import Alert, Event, User
 from api.utils import get_SHA256
-
-from django.core import serializers
 
 
 class SignupView(CreateAPIView):
@@ -22,21 +21,23 @@ class SignupView(CreateAPIView):
         else:
             return super(SignupView, self).handle_exception(exc)
 
+    def perform_create(self, serializer):
+        super(SignupView, self).perform_create(serializer)
+        # Send email
+        email_to = serializer.instance.email
+        send_email('emails/signup_created.txt', {'callback': serializer.instance.callback}, email_to)
+
 
 class AlertView(CreateAPIView):
 
     serializer_class = AlertAPISerializer
-
-    def perform_create(self, serializer):
-        super(AlertView, self).perform_create(serializer)
-        # Send email
-        email_to = serializer.instance.email.email
-        api_url = reverse('api:alert-confirm', kwargs={'confirmation_key':serializer.instance.confirmation_key})
-        absolute_url = serializer.context['request'].build_absolute_uri(api_url)
-        send_email('emails/alert_created.txt', {'alert': serializer.instance, 'url':absolute_url}, email_to)
+    authentication_classes = (AuthCodeAuthentication, )
 
     def handle_exception(self, exc):
         if not isinstance(exc, ValidationError):
+            if hasattr(exc, 'status_code'):
+                return Response(status=exc.status_code)
+
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return super(AlertView, self).handle_exception(exc)
@@ -67,42 +68,23 @@ class AlertView(CreateAPIView):
 
     def get(self, request):
 
-        email = request.query_params.get('email')
-        alerts_query_set = Alert.objects.filter(email__email=email)
+        # email = request.query_params.get('email')
+        alert_obj = None
+        response_data = dict()
+        try:
+            alert_obj = Alert.objects.get(
+                user__authentication_code=request.user.authentication_code,
+                contract=request.query_params.get('contract')
+            )
 
-        if alerts_query_set.count() > 0:
+            for event in alert_obj.events.all():
+                response_data[event.name] = dict()
+                for eventvalue in event.values.all():
+                    response_data[event.name][eventvalue.property] = eventvalue.value
 
-            contracts = dict()
-            # Retrieve contracts
-            for alert in alerts_query_set:
-                events = alert.events.all()
+            return Response(status=status.HTTP_200_OK, data=response_data)
 
-                for event in events:
-                    contract_address = str(event.contract.address)
-                    values = []
-
-                    if event.name:
-                        name = event.name.name
-                    else:
-                        name = None
-
-                    for value in event.values.all():
-                        v = dict()
-                        v[str(value.property)] = str(value.value)
-                        values.append(v)
-
-                    contract_dict = dict()
-                    contract_dict['eventName'] = name
-                    contract_dict['values'] = values
-
-                    if contract_address in contracts:
-                        contracts[contract_address].append(contract_dict)
-                    else:
-                        contracts[contract_address] = [contract_dict]
-
-            return Response(status=status.HTTP_200_OK, data=contracts)
-
-        else:
+        except Alert.DoesNotExist:
             return Response(status=status.HTTP_200_OK, data={})
 
 
