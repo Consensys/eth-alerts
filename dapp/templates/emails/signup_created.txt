@@ -6,7 +6,7 @@
 
 {% block body %}
 
-A new alert was created. Please confirm its creation by clicking on the
-following url: <a href='{{url}}'>confirm</a>.
+Signup succeeded. Please continue by clicking on the
+following url: <a href='{{callback}}'>Open</a>.
 
 {% endblock %}

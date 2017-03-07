@@ -9,17 +9,35 @@ from events.models import Alert
 from django.core import mail
 from api.factories import APIFactory
 
+
 class TestAlertView(APITestCase):
 
     def setUp(self):
         self.factory = APIFactory()
+        self.signup_data = self.factory.signup_data
+        signup_response = self.client.post(reverse('api:signup'), data=dumps(self.signup_data), content_type='application/json')
+        self.auth_code = signup_response.data.get('callback').split('auth-code=')[1]
 
     def test_signup(self):
+        num_emails_before = len(mail.outbox)
         signup_data = self.factory.signup_data
-        response = self.client.post(reverse('api:signup'), data=dumps(signup_data), content_type='application/json')
-        self.assertEquals(response.status_code, status.HTTP_201_CREATED)
-        self.assertEquals(signup_data.get('email'), response.data.get('email'))
+        signup_response = self.client.post(
+            reverse('api:signup'),
+            data=dumps(signup_data),
+            content_type='application/json'
+        )
+        self.assertEquals(signup_response.status_code, status.HTTP_201_CREATED)
+        self.assertEquals(signup_data.get('email'), signup_response.data.get('email'))
         self.assertIsNotNone(signup_data.get('callback'))
+
+        self.signup_data = signup_response.data
+
+        num_emails_after = len(mail.outbox)
+
+        # check if the email was sent
+        self.assertEquals(num_emails_after, num_emails_before+1)
+        # Check if email context is filled
+        self.assertIsNotNone(mail.outbox[0].__dict__['context'].get('callback'))
 
         signup_fails_data = signup_data.copy()
         signup_fails_data['email'] = None
@@ -31,25 +49,90 @@ class TestAlertView(APITestCase):
         response_fails = self.client.post(reverse('api:signup'), data=dumps(signup_fails_data), content_type='application/json')
         self.assertEquals(response_fails.status_code, status.HTTP_400_BAD_REQUEST)
 
-    """def test_create(self):
-
-        count_before = Alert.objects.all().count()
-        num_emails_before = len(mail.outbox)
+    def test_no_auth_code(self):
         data = self.factory.creation_data
+        response = self.client.post(reverse('api:alert'), data=dumps(data), content_type='application/json')
+        self.assertEquals(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        r = self.client.post(reverse('api:alert'), data=dumps(data), content_type='application/json')
-        self.assertEqual(status.HTTP_201_CREATED, r.status_code)
-        count_after = alerts = Alert.objects.all().count()
-        num_emails_ater = len(mail.outbox)
+    def test_create_update(self):
+        count_before = Alert.objects.all().count()
+
+        # Create alert and events
+        create_data = self.factory.creation_data.copy()
+        create_response = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code':self.auth_code}
+        )
+
+        self.assertEqual(status.HTTP_201_CREATED, create_response.status_code)
+        count_after = Alert.objects.all().count()
 
         # Check if the alert has been created
         self.assertEquals(count_after, count_before+1)
-        # check if the email was sent
-        self.assertEquals(num_emails_ater, num_emails_before+1)
-        # Check if email context is filled
-        self.assertEquals(mail.outbox[0].__dict__['context'].get('alert').abi, data.get('abi'))
 
-    def test_create_fail(self):
+        # Test update
+        update_data = create_data.copy()
+        update_data['events'] = {create_data.get('events').items()[0][0]: create_data.get('events').items()[0][1]}
+        update_response = self.client.post(
+            reverse('api:alert'),
+            data=dumps(update_data),
+            content_type='application/json',
+            **{'auth-code': self.auth_code}
+        )
+
+        self.assertEquals(status.HTTP_201_CREATED, update_response.status_code)
+        self.assertEquals(1, Alert.objects.filter(user__authentication_code=self.auth_code)[0].events.count())
+
+
+    def test_creat_no_values(self):
+        # Create an Event with no values
+        create_data =  self.factory.creation_data.copy()
+        create_data['events'] = {'testEventName': None}
+
+        create_response = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code':self.auth_code}
+        )
+
+        self.assertEquals(status.HTTP_201_CREATED, create_response.status_code)
+
+    def test_get_alert(self):
+        create_data = self.factory.creation_data.copy()
+        get_data = {'contract': create_data.get('contract')}
+
+        create_response = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code': self.auth_code}
+        )
+
+        get_response = self.client.get(
+            reverse('api:alert'),
+            get_data,
+            content_type='application/json',
+            **{'auth-code': self.auth_code}
+        )
+
+        self.assertEquals(status.HTTP_200_OK, get_response.status_code)
+        for key in get_response.data:
+            self.assertIn(key, get_response.data.keys())
+
+        get_data['contract'] = '0x0'
+        get_empty_response = self.client.get(reverse('api:alert'),
+                                             get_data,
+                                             content_type='application/json',
+                                             **{'auth-code': self.auth_code})
+
+        self.assertEquals(status.HTTP_200_OK, get_empty_response.status_code)
+        self.assertDictEqual(get_empty_response.data, {})
+
+
+    """def test_create_fail(self):
 
         count_before = Alert.objects.all().count()
         num_emails_before = len(mail.outbox)
@@ -118,22 +201,6 @@ class TestAlertView(APITestCase):
 
         self.assertEquals(r_delete.status_code, 400)
 
-    def test_get_alert(self):
-        create_data = self.factory.creation_data.copy()
-        create_data2 = self.factory.creation_data.copy()
-        create_data3 = self.factory.creation_data.copy()
-
-        create_data2['events'] = {'event2': {'eventProperty2': 'eventValue2'}}
-
-        get_data = {'email': create_data['email']}
-
-        r_create = self.client.post(reverse('api:alert'), data=dumps(create_data), content_type='application/json')
-        r_create2 = self.client.post(reverse('api:alert'), data=dumps(create_data2), content_type='application/json')
-        r_get = self.client.get(reverse('api:alert'), get_data, content_type='application/json')
-
-        self.assertEquals(status.HTTP_200_OK, r_get.status_code)
-        self.assertEquals(len(r_get.data[create_data['contract']]), 2)
-        self.assertEquals(r_get.data[create_data['contract']][1]['values'][0], create_data2['events']['event2'])
 
     def test_get_alert_no_events(self):
         create_data = self.factory.creation_data.copy()
