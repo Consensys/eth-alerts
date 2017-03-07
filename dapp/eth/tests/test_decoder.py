@@ -33,10 +33,10 @@ class TestDecoder(TestCase):
     def test_decode_logs(self):
         logs = [
           {
-            'address' : '0xa6d9c5f7d4de3cef51ad3b7235d79ccc95114de5',
-            'data' : "0x00000000000000000000000065039084cc6f4773291a6ed7dcf5bc3a2e894ff300000000000000000000000017e054b16ca658789c927c854976450adbda7df0",
-            'topics' : [
-                "0x4fb057ad4a26ed17a57957fa69c306f11987596069b89521c511fc9a894e6161"
+            u'address' : u'0xa6d9c5f7d4de3cef51ad3b7235d79ccc95114de5',
+            u'data' : u"0x00000000000000000000000065039084cc6f4773291a6ed7dcf5bc3a2e894ff300000000000000000000000017e054b16ca658789c927c854976450adbda7df0",
+            u'topics' : [
+                u'0x4fb057ad4a26ed17a57957fa69c306f11987596069b89521c511fc9a894e6161'
             ]
           }
         ]
@@ -47,16 +47,16 @@ class TestDecoder(TestCase):
         self.assertListEqual(
             [
                 {
-                    'address': '0xa6d9c5f7d4de3cef51ad3b7235d79ccc95114de5',
-                    'name': 'ContractInstantiation',
-                    'params': [
+                    u'address': u'0xa6d9c5f7d4de3cef51ad3b7235d79ccc95114de5',
+                    u'name': u'ContractInstantiation',
+                    u'params': [
                         {
-                            'name': 'sender',
-                            'value': '0x65039084cc6f4773291a6ed7dcf5bc3a2e894ff3L'
+                            u'name': u'sender',
+                            u'value': u'0x65039084cc6f4773291a6ed7dcf5bc3a2e894ff3'
                         },
                         {
-                            'name': 'instantiation',
-                            'value': '0x17e054b16ca658789c927c854976450adbda7df0L'
+                            u'name': u'instantiation',
+                            u'value': u'0x17e054b16ca658789c927c854976450adbda7df0'
                         }
                     ]
                 }
