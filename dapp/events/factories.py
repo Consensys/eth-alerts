@@ -8,13 +8,22 @@ faker = FakerFactory.create()
 randomSHA256 = lambda:hashlib.sha256(str(random.random())).hexdigest()
 
 
+class DAppFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.DApp
+
+    name = faker.name()
+    authentication_code = randomSHA256()
+
+
 class UserFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = models.User
 
     email = faker.email()
-    authentication_code = randomSHA256()
+    # dapps = factory.SubFactory(DAppFactory)
 
 
 class AlertFactory(factory.DjangoModelFactory):
@@ -22,7 +31,7 @@ class AlertFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Alert
 
-    user = factory.SubFactory(UserFactory)
+    dapp = factory.SubFactory(DAppFactory)
 
     @factory.LazyAttribute
     def contract(self):

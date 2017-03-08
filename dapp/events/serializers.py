@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from rest_framework import serializers
-from models import (User, EventValue, Event, Alert)
+from models import (DApp, User, EventValue, Event, Alert)
 import simplejson
 
 
@@ -25,11 +25,20 @@ class EventSerializer(serializers.ModelSerializer):
     values = EventValueSerializer(many=True)
 
 
+class DAppSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DApp
+        fields = ('name', 'authentication_code')
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'authentication_code')
+        fields = ('email', 'dapps')
+
+    dapps = DAppSerializer(many=True)
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -37,14 +46,13 @@ class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alert
         fields = (
-            'user',
+            'dapp',
             # 'events',
             'abi',
             'contract'
         )
 
-    user = UserSerializer()
-    # events = EventSerializer(many=True)
+    dapp = DAppSerializer()
 
     def validate_abi(self, value):
         try:
