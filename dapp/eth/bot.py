@@ -46,20 +46,30 @@ class Bot(Singleton):
                 logs.extend(receipt[u'logs'])
         return self.decoder.decode_logs(logs)
 
-    def start(self):
-        # init decoder with last abi's
+    def execute(self):
 
-        # get block
+        # update decoder with last abi's
+        self.update_abis()
 
-        # decode block logs
+        # get block and decode logs
+        try:
+            logs = self.get_next_logs()
+            # If decoded, add to the correct user collection in case of a valid event
 
-        # If decoded, get contract from log address (can be many)
+            # get contract from log address (can be many)
 
-        # If contract match, get event names
+            # If contract match, get event names
 
-        # If event name filter, discard other events
+            # If event name filter, discard other events
 
-        # Get event property, if event property, discard unmatched values
+            # Get event property, if event property, discard unmatched values
 
-        # group events by contract
-        pass
+            # group events by contract
+
+            # add to send mail
+
+            # increase block number
+
+        except ValueError:
+            # Block not mined yet, so, continue execution
+            pass

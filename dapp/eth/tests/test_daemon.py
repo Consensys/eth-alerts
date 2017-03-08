@@ -9,7 +9,6 @@ from events.factories import AlertFactory
 from datetime import datetime
 from django.utils import timezone
 from web3 import TestRPCProvider
-server = TestRPCProvider()
 from json import loads
 
 
@@ -20,6 +19,11 @@ class TestDaemon(TestCase):
         self.bot = Bot()
         self.bot.decoder.methods = {}
         self.maxDiff = None
+        self.rpc = TestRPCProvider()
+
+    def tearDown(self):
+        self.rpc.server.shutdown()
+        self.rpc = None
 
     def test_init(self):
         self.assertEquals(self.bot.last_abi_datetime, datetime.fromtimestamp(0, timezone.get_current_timezone()))
@@ -42,6 +46,16 @@ class TestDaemon(TestCase):
         AlertFactory()
         self.assertEquals(self.bot.update_abis(), 5)
         self.assertEquals(self.bot.update_abis(), 0)
+
+    def test_get_logs_wrong_block(self):
+        self.assertEquals(self.bot.next_block(), 0)
+        self.assertEqual(0, self.bot.web3.eth.blockNumber)
+        logs = self.bot.get_next_logs()
+        self.assertListEqual([], logs)
+        self.bot.increase_block()
+        self.assertEquals(self.bot.next_block(), 1)
+        self.assertEqual(0, self.bot.web3.eth.blockNumber)
+        self.assertRaises(ValueError, self.bot.get_next_logs)
 
     def test_get_logs(self):
         # no logs before transactions

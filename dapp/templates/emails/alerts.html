@@ -1,0 +1,30 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% block subject %}
+{{dapp_logs|length}} Alerts
+{% endblock %}
+
+{% block body %}
+
+We have detected a few transaction events you were subscribed to:
+{% for dapp, dapp_logs in dapps.items %}
+    Dapp {{dapp}} had {{dapp_logs|length}} events:
+    <ul>
+    {% for log in dapp_logs %}
+        <li>
+            Event {{ log.name }} triggered by contract {{ log.address }}
+            <ul>
+                {% for param in log.params %}
+                    <li>
+                        {{ param.name }} : {{ param.value }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <a href=''>Unsubscribe</a>.
+{% endfor %}
+
+{% endblock %}
