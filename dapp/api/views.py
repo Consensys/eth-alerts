@@ -49,7 +49,7 @@ class AlertView(CreateAPIView):
             AlertOwnerAuthentication().authenticate(request)
             return super(AlertView, self).post(request, *args, **kwargs)
 
-    def delete(self, request):
+    """def delete(self, request):
         serializer = AlertDeleteAPISerializer(data=request.data)
 
         if serializer.is_valid():
@@ -71,7 +71,7 @@ class AlertView(CreateAPIView):
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)"""
 
     def get(self, request):
 
@@ -80,7 +80,7 @@ class AlertView(CreateAPIView):
         response_data = dict()
         try:
             alert_obj = Alert.objects.get(
-                user__authentication_code=request.user.authentication_code,
+                dapp__authentication_code=request.auth.authentication_code,
                 contract=request.query_params.get('contract')
             )
 

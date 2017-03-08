@@ -118,8 +118,7 @@ class TestAlertView(APITestCase):
 
         self.assertEquals(status.HTTP_201_CREATED, delete_response_success.status_code)
 
-
-    """def test_creat_no_values(self):
+    def test_creat_no_values(self):
         # Create an Event with no values
         create_data =  self.factory.creation_data.copy()
         create_data['events'] = {'testEventName': None}
@@ -162,7 +161,7 @@ class TestAlertView(APITestCase):
                                              **{'auth-code': self.auth_code})
 
         self.assertEquals(status.HTTP_200_OK, get_empty_response.status_code)
-        self.assertDictEqual(get_empty_response.data, {})"""
+        self.assertDictEqual(get_empty_response.data, {})
 
 
     """def test_create_fail(self):
