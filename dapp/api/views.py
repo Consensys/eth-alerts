@@ -5,7 +5,7 @@ from rest_framework import status, permissions
 from rest_framework.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from serializers import AlertAPISerializer, AlertDeleteAPISerializer, SignupAPISerializer
-from authentication import AuthCodeAuthentication
+from authentication import AuthCodeAuthentication, AlertOwnerAuthentication
 from utils import send_email
 from events.models import Alert, Event, User
 from api.utils import get_SHA256
@@ -41,6 +41,13 @@ class AlertView(CreateAPIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return super(AlertView, self).handle_exception(exc)
+
+    def post(self, request, *args, **kwargs):
+        if request.data.get('events'):
+            return super(AlertView, self).post(request, *args, **kwargs)
+        else:
+            AlertOwnerAuthentication().authenticate(request)
+            return super(AlertView, self).post(request, *args, **kwargs)
 
     def delete(self, request):
         serializer = AlertDeleteAPISerializer(data=request.data)

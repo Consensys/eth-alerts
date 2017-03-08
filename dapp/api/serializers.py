@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from rest_framework import serializers
 from events.models import (
+    DApp,
     User,
     EventValue,
     Event,
@@ -15,25 +16,32 @@ from events.serializers import (
 )
 from api.utils import get_SHA256
 
-from django.db import IntegrityError
-
 
 class SignupAPISerializer(serializers.Serializer):
 
     email = serializers.EmailField()
     callback = serializers.CharField()
+    name = serializers.CharField() # dapp name
 
     def create(self, validated_data):
-        user = None
+        dapp_obj = None
+        user_obj = None
+
         try:
+            dapp_obj = DApp()
+            dapp_obj.authentication_code = get_SHA256()
+            dapp_obj.name = validated_data.get('name')
+            dapp_obj.save()
+
             user = User.objects.get(email=validated_data.get('email'))
         except User.DoesNotExist:
             user = User()
             user.email = validated_data.get('email')
-            user.authentication_code = get_SHA256()
             user.save()
 
-        user.__dict__['callback'] = validated_data.get('callback').replace('{}', '?auth-code=%s' % user.authentication_code)
+        user.dapps.add(dapp_obj)
+        user.save()
+        user.__dict__['callback'] = validated_data.get('callback').replace('{%auth-code%}', '?auth-code=%s' % dapp_obj.authentication_code)
 
         return user
 
@@ -48,7 +56,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = ('contract', 'abi') #'__all__'
+        fields = ('contract', 'abi')  # '__all__'
 
     contract = serializers.CharField()
     abi = serializers.ListField()
@@ -95,12 +103,6 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
             filtered_data['events'] = filtered_events
 
-        else:
-            # filtered_data['events'] = None
-            raise serializers.ValidationError({
-                'events': 'This field is required.'
-            })
-
         return filtered_data
 
     def create(self, validated_data):
@@ -114,7 +116,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
         except Alert.DoesNotExist:
             alert_obj = Alert()
             alert_obj.abi = validated_data.get('abi')
-            alert_obj.user = self.context['request'].user
+            alert_obj.dapp = self.context['request'].auth
             alert_obj.contract = validated_data.get('contract')
             alert_obj.save()
 
@@ -136,6 +138,9 @@ class AlertAPISerializer(serializers.ModelSerializer):
                     eventvalue_obj.value = propertyvalue
                     eventvalue_obj.event = event_obj
                     eventvalue_obj.save()
+        else:
+            # Delete Alert when no Events in request body
+            alert_obj.delete()
 
         return alert_obj
 

@@ -22,7 +22,7 @@ class APIFactory(factory.Factory):
     class Meta:
         model = Model
 
-    callback = 'https://wallet.gnosis.pm/#/signup{}'
+    callback = 'https://wallet.gnosis.pm/#/signup{%auth-code%}'
 
     @factory.LazyAttribute
     def user(self):
@@ -48,7 +48,7 @@ class APIFactory(factory.Factory):
 
     @factory.LazyAttribute
     def signup_data(self):
-        data = dict(email=self.user.email, callback=self.callback)
+        data = dict(email=self.user.email, callback=self.callback, name=faker.name())
         return data
 
     @factory.LazyAttribute

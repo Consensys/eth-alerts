@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from django.conf import settings
 from mail_templated import EmailMessage
+# from django.core import mail
 import hashlib
 import random
 
