@@ -5,7 +5,7 @@ from rest_framework import status, permissions
 from rest_framework.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from serializers import AlertAPISerializer, AlertDeleteAPISerializer, SignupAPISerializer
-from authentication import AuthCodeAuthentication
+from authentication import AuthCodeAuthentication, AlertOwnerAuthentication
 from utils import send_email
 from events.models import Alert, Event, User
 from api.utils import get_SHA256
@@ -42,7 +42,14 @@ class AlertView(CreateAPIView):
         else:
             return super(AlertView, self).handle_exception(exc)
 
-    def delete(self, request):
+    def post(self, request, *args, **kwargs):
+        if request.data.get('events'):
+            return super(AlertView, self).post(request, *args, **kwargs)
+        else:
+            AlertOwnerAuthentication().authenticate(request)
+            return super(AlertView, self).post(request, *args, **kwargs)
+
+    """def delete(self, request):
         serializer = AlertDeleteAPISerializer(data=request.data)
 
         if serializer.is_valid():
@@ -64,7 +71,7 @@ class AlertView(CreateAPIView):
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)"""
 
     def get(self, request):
 
@@ -73,7 +80,7 @@ class AlertView(CreateAPIView):
         response_data = dict()
         try:
             alert_obj = Alert.objects.get(
-                user__authentication_code=request.user.authentication_code,
+                dapp__authentication_code=request.auth.authentication_code,
                 contract=request.query_params.get('contract')
             )
 

@@ -8,6 +8,7 @@ from simplejson import dumps, loads
 from events.models import Alert
 from django.core import mail
 from api.factories import APIFactory
+from events.factories import DAppFactory
 
 
 class TestAlertView(APITestCase):
@@ -63,7 +64,7 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code':self.auth_code}
+            **{'auth-code': self.auth_code}
         )
 
         self.assertEqual(status.HTTP_201_CREATED, create_response.status_code)
@@ -83,8 +84,39 @@ class TestAlertView(APITestCase):
         )
 
         self.assertEquals(status.HTTP_201_CREATED, update_response.status_code)
-        self.assertEquals(1, Alert.objects.filter(user__authentication_code=self.auth_code)[0].events.count())
+        self.assertEquals(1, Alert.objects.filter(dapp__authentication_code=self.auth_code)[0].events.count())
 
+    def test_alert_delete(self):
+        create_data = self.factory.creation_data.copy()
+
+        create_response = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code': self.auth_code}
+        )
+
+        create_data['events'] = None
+
+        dapp = DAppFactory()
+
+        delete_response_fails = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code': dapp.authentication_code}
+        )
+
+        self.assertEquals(delete_response_fails.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        delete_response_success = self.client.post(
+            reverse('api:alert'),
+            data=dumps(create_data),
+            content_type='application/json',
+            **{'auth-code': self.auth_code}
+        )
+
+        self.assertEquals(status.HTTP_201_CREATED, delete_response_success.status_code)
 
     def test_creat_no_values(self):
         # Create an Event with no values
