@@ -5,7 +5,10 @@ import random
 import hashlib
 
 faker = FakerFactory.create()
-randomSHA256 = lambda:hashlib.sha256(str(random.random())).hexdigest()
+
+
+def randomSHA256():
+    return hashlib.sha256(str(random.random())).hexdigest()
 
 
 class DAppFactory(factory.DjangoModelFactory):

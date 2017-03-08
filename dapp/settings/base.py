@@ -255,3 +255,8 @@ SWAGGER_SETTINGS = {
 # ------------------------------------------------------------------------------
 SOLO_CACHE = 'default'
 SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
+
+
+# ETHEREUM NODE CONFIGURATION
+# ------------------------------------------------------------------------------
+ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
