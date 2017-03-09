@@ -19,8 +19,12 @@ class TestDecoder(TestCase):
         '"type": "address", "name": "instantiation"}], "type": "event", "name": "ContractInstantiation", "anonymous": false}]')
     decoder = Decoder()
 
+    def setUp(self):
+        self.decoder.methods = {}
+
     def test_add_abis(self):
         self.decoder.add_abi([])
+        self.assertEquals(len(self.decoder.methods), 0)
         self.decoder.add_abi(self.test_abi)
         self.assertEquals(len(self.decoder.methods), 5)
         self.decoder.remove_abi([])

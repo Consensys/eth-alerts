@@ -54,9 +54,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    #'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 )
 
 # DEBUG
@@ -155,9 +153,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
-                # Your stuff: custom template context processors go here
-                'social.apps.django_app.context_processors.backends',
-                'social.apps.django_app.context_processors.login_redirect',
             ],
         },
     },
@@ -221,8 +216,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         "django.contrib.auth.models.AnonymousUser",
-        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        #'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
     'COERCE_DECIMAL_TO_STRING': False,
 }
@@ -260,3 +253,15 @@ SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
 # ETHEREUM NODE CONFIGURATION
 # ------------------------------------------------------------------------------
 ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
+
+# CELERY CONFIGURATION
+# ------------------------------------------------------------------------------
+INSTALLED_APPS += ('taskapp.celery.CeleryConfig',)
+INSTALLED_APPS += ('kombu.transport.django',)
+INSTALLED_APPS += ('djcelery',)
+BROKER_URL = env("CELERY_BROKER_URL", default='django://')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IGNORE_RESULT = True
+CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
