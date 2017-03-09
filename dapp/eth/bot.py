@@ -15,9 +15,7 @@ class Bot(Singleton):
         super(Bot, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(HTTPProvider(settings.ETHEREUM_NODE_URL))
-
-    last_abi_datetime = datetime.fromtimestamp(0, timezone.get_current_timezone())
-    decoder = None
+        self.last_abi_datetime = datetime.fromtimestamp(0, timezone.get_current_timezone())
 
     def next_block(self):
         return models.Daemon.get_solo().block_number
@@ -46,6 +44,29 @@ class Bot(Singleton):
                 logs.extend(receipt[u'logs'])
         return self.decoder.decode_logs(logs)
 
+    def filter_logs(self, logs):
+        all_alerts = Alert.objects.all().prefetch_related('events__event_values').prefetch_related('dapp')
+        filtered = {}
+        for log in logs:
+            # get alerts for same log contract (can be many)
+            alerts = all_alerts.filter(contract=log[u'address'])
+            if alerts:
+                for alert in alerts:
+                    # Get event names
+                    events = alert.events.filter(name=log[u'name'])
+                    if events.count():
+                        # Get event property, if event property, discard unmatched values
+                        if events[0].event_values.count():
+                            for param in log[u'params']:
+                                # check value
+                                if events[0].event_values.filter(name=param[u'name'], value=param[u'value']):
+                                    # add value
+                                    pass
+                        else:
+                            pass
+
+        return filtered
+
     def execute(self):
 
         # update decoder with last abi's
@@ -54,21 +75,13 @@ class Bot(Singleton):
         # get block and decode logs
         try:
             logs = self.get_next_logs()
-            # If decoded, add to the correct user collection in case of a valid event
+            # If decoded, filter correct logs and group by dapp and mail
+            filtered = self.filter_logs(logs)
 
-            # get contract from log address (can be many)
-
-            # If contract match, get event names
-
-            # If event name filter, discard other events
-
-            # Get event property, if event property, discard unmatched values
-
-            # group events by contract
-
-            # add to send mail
+            # add filtered logs to send mail
 
             # increase block number
+            self.increase_block()
 
         except ValueError:
             # Block not mined yet, so, continue execution
