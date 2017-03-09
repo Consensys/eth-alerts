@@ -1,3 +1,4 @@
+from corsheaders.defaults import default_headers
 import environ
 import sys
 
@@ -230,6 +231,9 @@ REST_FRAMEWORK = {
 # DJANGO CORS HEADERS CONFIGURATION
 # ------------------------------------------------------------------------------
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = default_headers + (
+    'auth-code',
+)
 CORS_URLS_REGEX = r'^/(api|dapp)/.*$'
 
 # DJANGO REST SWAGGER SETTINGS

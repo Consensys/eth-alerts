@@ -4,12 +4,13 @@ from __future__ import unicode_literals
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from events.models import DApp, Alert
+from constants import DJANGO_AUTH_CODE_HEADER
 
 
 class AuthCodeAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        auth_code = request.META.get('auth-code')
+        auth_code = request.META.get(DJANGO_AUTH_CODE_HEADER)
         if auth_code:
             try:
                 dapp = DApp.objects.get(authentication_code=auth_code)

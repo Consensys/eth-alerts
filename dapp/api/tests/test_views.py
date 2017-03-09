@@ -9,6 +9,7 @@ from events.models import Alert
 from django.core import mail
 from api.factories import APIFactory
 from events.factories import DAppFactory
+from api.constants import DJANGO_AUTH_CODE_HEADER, AUTH_CODE_HEADER
 
 
 class TestAlertView(APITestCase):
@@ -17,7 +18,9 @@ class TestAlertView(APITestCase):
         self.factory = APIFactory()
         self.signup_data = self.factory.signup_data
         signup_response = self.client.post(reverse('api:signup'), data=dumps(self.signup_data), content_type='application/json')
-        self.auth_code = signup_response.data.get('callback').split('auth-code=')[1]
+        self.auth_code = signup_response.data.get('callback').split(AUTH_CODE_HEADER + '=')[1]
+        self.auth_header = dict()
+        self.auth_header[DJANGO_AUTH_CODE_HEADER] = self.auth_code
 
     def test_signup(self):
         num_emails_before = len(mail.outbox)
@@ -64,7 +67,7 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         self.assertEqual(status.HTTP_201_CREATED, create_response.status_code)
@@ -80,7 +83,7 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(update_data),
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         self.assertEquals(status.HTTP_201_CREATED, update_response.status_code)
@@ -93,18 +96,21 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         create_data['events'] = None
 
         dapp = DAppFactory()
 
+        fail_auth_header = self.auth_header.copy()
+        fail_auth_header[DJANGO_AUTH_CODE_HEADER] = dapp.authentication_code
+
         delete_response_fails = self.client.post(
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code': dapp.authentication_code}
+            **fail_auth_header
         )
 
         self.assertEquals(delete_response_fails.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -113,7 +119,7 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         self.assertEquals(status.HTTP_201_CREATED, delete_response_success.status_code)
@@ -127,7 +133,7 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code':self.auth_code}
+            **self.auth_header
         )
 
         self.assertEquals(status.HTTP_201_CREATED, create_response.status_code)
@@ -140,14 +146,14 @@ class TestAlertView(APITestCase):
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         get_response = self.client.get(
             reverse('api:alert'),
             get_data,
             content_type='application/json',
-            **{'auth-code': self.auth_code}
+            **self.auth_header
         )
 
         self.assertEquals(status.HTTP_200_OK, get_response.status_code)
@@ -158,7 +164,7 @@ class TestAlertView(APITestCase):
         get_empty_response = self.client.get(reverse('api:alert'),
                                              get_data,
                                              content_type='application/json',
-                                             **{'auth-code': self.auth_code})
+                                             **self.auth_header)
 
         self.assertEquals(status.HTTP_200_OK, get_empty_response.status_code)
         self.assertDictEqual(get_empty_response.data, {})

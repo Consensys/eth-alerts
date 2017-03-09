@@ -15,6 +15,7 @@ from events.serializers import (
     AlertSerializer
 )
 from api.utils import get_SHA256
+from api.constants import AUTH_CODE_HEADER
 
 
 class SignupAPISerializer(serializers.Serializer):
@@ -40,8 +41,10 @@ class SignupAPISerializer(serializers.Serializer):
         dapp_obj.user = user_obj
         dapp_obj.save()
 
-        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%auth-code%}', '?auth-code=%s' %
+        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%' + AUTH_CODE_HEADER + '%}', '?%s=%s' % (
+                                                                               AUTH_CODE_HEADER,
                                                                                dapp_obj.authentication_code)
+                                                                            )
 
         return user_obj
 
@@ -56,7 +59,7 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = ('contract', 'abi')  # '__all__'
+        fields = ('contract', 'abi')
 
     contract = serializers.CharField()
     abi = serializers.ListField()
