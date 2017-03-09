@@ -9,17 +9,14 @@ class TestSerializers(TestCase):
 
     def test_user_serializer(self):
         dapp = factories.DAppFactory()
-        user = factories.UserFactory()
-        user.dapps.add(dapp)
-        user.save()
-
-        serialized_user = serializers.UserSerializer(user)
+        serialized_user = serializers.UserSerializer(dapp.user)
+        serialized_dapp = serializers.DAppSerializer(dapp)
         self.assertIsNotNone(serialized_user)
-        self.assertEquals(serialized_user.data.get('email'), user.email)
-        self.assertEquals(serialized_user.data.get('dapps')[0].get('authentication_code'), user.dapps.all()[0].authentication_code)
+        self.assertEquals(serialized_user.data.get('email'), dapp.user.email)
+        self.assertEquals(serialized_dapp.data.get('authentication_code'), dapp.authentication_code)
 
-        dapp_dict = {'name': None, 'authentication_code': dapp.authentication_code}
         user_dict = {'email': None}
+        dapp_dict = {'name': None, 'authentication_code': dapp.authentication_code, 'user': user_dict}
 
         serialized_dapp_fail = serializers.DAppSerializer(data=dapp_dict)
         serialized_user_fail = serializers.UserSerializer(data=user_dict)
@@ -27,8 +24,9 @@ class TestSerializers(TestCase):
         self.assertFalse(serialized_user_fail.is_valid())
 
         dapp_dict['name'] = 'testname'
+        dapp_dict['authentication_code'] = 'testcode'
         user_dict['email'] = 'anotheremail@test.com'
-        user_dict['dapps'] = [dapp_dict]
+        dapp_dict['user'] = user_dict
 
         serialized_dapp_success = serializers.DAppSerializer(data=dapp_dict)
         serialized_user_success = serializers.UserSerializer(data=user_dict)
@@ -52,8 +50,11 @@ class TestSerializers(TestCase):
 
         alert_dict = {
             'dapp': {
-                'name': 'testname',
-                'authentication_code': alert.dapp.authentication_code
+                'name': 'Multisig',
+                'authentication_code': 'testcode',
+                'user': {
+                    'email': 'test@test.com'
+                }
             },
             'abi': alert.abi,
             'contract': alert.contract

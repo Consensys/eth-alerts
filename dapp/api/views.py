@@ -86,7 +86,7 @@ class AlertView(CreateAPIView):
 
             for event in alert_obj.events.all():
                 response_data[event.name] = dict()
-                for eventvalue in event.values.all():
+                for eventvalue in event.event_values.all():
                     response_data[event.name][eventvalue.property] = eventvalue.value
 
             return Response(status=status.HTTP_200_OK, data=response_data)
@@ -94,7 +94,7 @@ class AlertView(CreateAPIView):
         except Alert.DoesNotExist:
             return Response(status=status.HTTP_200_OK, data={})
 
-
+"""
 class AlertConfirmView(APIView):
 
     def get(self, request, confirmation_key):
@@ -127,6 +127,6 @@ class AlertDeleteView(CreateAPIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
+"""
 
 

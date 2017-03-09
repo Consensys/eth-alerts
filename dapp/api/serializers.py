@@ -28,22 +28,22 @@ class SignupAPISerializer(serializers.Serializer):
         user_obj = None
 
         try:
-            dapp_obj = DApp()
-            dapp_obj.authentication_code = get_SHA256()
-            dapp_obj.name = validated_data.get('name')
-            dapp_obj.save()
-
-            user = User.objects.get(email=validated_data.get('email'))
+            user_obj = User.objects.get(email=validated_data.get('email'))
         except User.DoesNotExist:
-            user = User()
-            user.email = validated_data.get('email')
-            user.save()
+            user_obj = User()
+            user_obj.email = validated_data.get('email')
+            user_obj.save()
 
-        user.dapps.add(dapp_obj)
-        user.save()
-        user.__dict__['callback'] = validated_data.get('callback').replace('{%auth-code%}', '?auth-code=%s' % dapp_obj.authentication_code)
+        dapp_obj = DApp()
+        dapp_obj.authentication_code = get_SHA256()
+        dapp_obj.name = validated_data.get('name')
+        dapp_obj.user = user_obj
+        dapp_obj.save()
 
-        return user
+        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%auth-code%}', '?auth-code=%s' %
+                                                                               dapp_obj.authentication_code)
+
+        return user_obj
 
     def to_representation(self, instance):
         return {

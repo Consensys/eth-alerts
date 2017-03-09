@@ -18,14 +18,14 @@ class TestEvent(TestCase):
         self.assertRaises(DApp.DoesNotExist, DApp.objects.get, name='giacomo_fake_name')
 
         with self.assertRaises(IntegrityError): # duplicate key error
-            DAppFactory()
+            dapp_duplicate = DApp()
+            dapp_duplicate.user = dapp_obj.user
+            dapp_duplicate.authentication_code = dapp_obj.authentication_code
+            dapp_duplicate.name = dapp_obj.name
+            dapp_duplicate.save()
 
     def test_create_user(self):
         dapp = DAppFactory()
-        user = UserFactory()
-        user.dapps.add(dapp)
-        user.save()
-        self.assertEquals(1, user.dapps.count())
         self.assertRaises(User.DoesNotExist, User.objects.get, email='test.giacomo@gmail.com')
 
     def test_create_alert_event(self):

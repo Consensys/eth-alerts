@@ -13,7 +13,7 @@ class AuthCodeAuthentication(BaseAuthentication):
         if auth_code:
             try:
                 dapp = DApp.objects.get(authentication_code=auth_code)
-                return None, dapp
+                return dapp.user, dapp
             except DApp.DoesNotExist:
                 raise AuthenticationFailed('Forbidden')
         else:
@@ -29,7 +29,7 @@ class AlertOwnerAuthentication(AuthCodeAuthentication):
             try:
                 # The contract related alert must be owned by auth-code user
                 alert = Alert.objects.get(dapp__authentication_code=dapp.authentication_code, contract=contract)
-                return None, dapp
+                return dapp.user, dapp
             except Alert.DoesNotExist:
                 raise AuthenticationFailed('Forbidden')
         else:

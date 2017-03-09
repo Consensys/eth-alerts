@@ -18,27 +18,27 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = (
             'name',
-            'values',
+            'event_values',
             'alert'
         )
 
-    values = EventValueSerializer(many=True)
-
-
-class DAppSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = DApp
-        fields = ('name', 'authentication_code')
+    event_values = EventValueSerializer(many=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'dapps')
+        fields = ('email',)
 
-    dapps = DAppSerializer(many=True)
+
+class DAppSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DApp
+        fields = ('name', 'authentication_code', 'user',)
+
+    user = UserSerializer()
 
 
 class AlertSerializer(serializers.ModelSerializer):

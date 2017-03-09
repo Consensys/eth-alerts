@@ -4,23 +4,20 @@ from django.db import models
 from model_utils.models import TimeStampedModel
 
 
-class DApp(TimeStampedModel):
-    """
-    DApp class
-    """
-    class Meta:
-        unique_together = ('name', 'authentication_code')
-
-    name = models.TextField()
-    authentication_code = models.TextField()
-
-
 class User(TimeStampedModel):
     """
     User class
     """
     email = models.TextField(unique=True)
-    dapps = models.ManyToManyField(DApp)
+
+
+class DApp(TimeStampedModel):
+    """
+    DApp class
+    """
+    name = models.TextField()
+    authentication_code = models.TextField(unique=True)
+    user = models.ForeignKey(User)
 
 
 class Alert(TimeStampedModel):

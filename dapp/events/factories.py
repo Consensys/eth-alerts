@@ -11,6 +11,14 @@ def randomSHA256():
     return hashlib.sha256(str(random.random())).hexdigest()
 
 
+class UserFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.User
+
+    email = factory.Sequence(lambda n: faker.email())
+
+
 class DAppFactory(factory.DjangoModelFactory):
 
     class Meta:
@@ -18,15 +26,7 @@ class DAppFactory(factory.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: faker.name())
     authentication_code = factory.Sequence(lambda n: randomSHA256())
-
-
-class UserFactory(factory.DjangoModelFactory):
-
-    class Meta:
-        model = models.User
-
-    email = factory.Sequence(lambda n: faker.email())
-    # dapps = factory.SubFactory(DAppFactory)
+    user = factory.SubFactory(UserFactory)
 
 
 class AlertFactory(factory.DjangoModelFactory):
