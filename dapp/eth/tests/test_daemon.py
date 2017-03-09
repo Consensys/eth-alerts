@@ -5,11 +5,12 @@ from eth.factories import DaemonFactory
 from eth.models import Daemon
 from eth.bot import Bot
 from events.models import Alert
-from events.factories import AlertFactory, EventFactory
+from events.factories import AlertFactory, EventFactory, EventValueFactory
 from datetime import datetime
 from django.utils import timezone
 from web3 import TestRPCProvider
 from json import loads, dumps
+from django.core import mail
 
 abi = loads(
     '[{"inputs": [{"type": "address", "name": ""}], "constant": true, "name": "isInstantiation", "payable": false, '
@@ -171,98 +172,159 @@ class TestDaemon(TestCase):
         self.rpc.server.shutdown()
         self.rpc = None
 
-    # def test_init(self):
-    #     self.assertEquals(self.bot.last_abi_datetime, datetime.fromtimestamp(0, timezone.get_current_timezone()))
-    #
-    # def test_next_block(self):
-    #     self.assertEquals(self.bot.next_block(), 0)
-    #     self.bot.increase_block()
-    #     self.assertEquals(self.bot.next_block(), 1)
-    #
-    # def test_update_abis(self):
-    #     self.assertIsNotNone(self.bot.decoder)
-    #     self.assertEquals(len(self.bot.decoder.methods), 0)
-    #     self.assertEquals(self.bot.update_abis(), 0)
-    #     self.assertEquals(len(self.bot.decoder.methods), 0)
-    #     # No ABIs
-    #     AlertFactory()
-    #     self.assertEquals(self.bot.update_abis(), 5)
-    #     self.assertEquals(len(self.bot.decoder.methods), 5)
-    #     self.assertEquals(self.bot.update_abis(), 0)
-    #     AlertFactory()
-    #     self.assertEquals(self.bot.update_abis(), 5)
-    #     self.assertEquals(self.bot.update_abis(), 0)
-    #
-    # def test_get_logs_wrong_block(self):
-    #     self.assertEquals(self.bot.next_block(), 0)
-    #     self.assertEqual(0, self.bot.web3.eth.blockNumber)
-    #     logs = self.bot.get_next_logs()
-    #     self.assertListEqual([], logs)
-    #     self.bot.increase_block()
-    #     self.assertEquals(self.bot.next_block(), 1)
-    #     self.assertEqual(0, self.bot.web3.eth.blockNumber)
-    #     self.assertRaises(ValueError, self.bot.get_next_logs)
-    #
-    # def test_get_logs(self):
-    #     # no logs before transactions
-    #     logs = self.bot.get_next_logs()
-    #     self.assertListEqual([], logs)
-    #
-    #     # create Wallet Factory contract
-    #     factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
-    #     self.assertIsNotNone(factory)
-    #     tx_hash = factory.deploy()
-    #     self.assertIsNotNone(tx_hash)
-    #     receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
-    #     self.assertIsNotNone(receipt)
-    #     self.assertIsNotNone(receipt.get('contractAddress'))
-    #     factory_address = receipt[u'contractAddress']
-    #
-    #     logs = self.bot.get_next_logs()
-    #     self.assertListEqual([], logs)
-    #
-    #     # send deploy function, will trigger two events
-    #     self.bot.decoder.add_abi(abi)
-    #     factory_instance = self.bot.web3.eth.contract(abi, factory_address)
-    #     owners = self.bot.web3.eth.accounts[0:2]
-    #     required_confirmations = 1
-    #     daily_limit = 0
-    #     txHash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
-    #     receipt = self.bot.web3.eth.getTransactionReceipt(txHash)
-    #     self.assertIsNotNone(receipt)
-    #     self.bot.increase_block()
-    #     logs = self.bot.get_next_logs()
-    #     self.assertEqual(2, len(logs))
-    #     self.assertDictEqual(
-    #         {
-    #             u'address': factory_address,
-    #             u'name': u'OwnersInit',
-    #             u'params': [
-    #                 {
-    #                     u'name': u'owners',
-    #                     u'value': self.bot.web3.eth.accounts[0:2]
-    #                 }
-    #             ]
-    #         },
-    #         logs[0]
-    #     )
-    #     self.assertDictEqual(
-    #         {
-    #             u'address': factory_address,
-    #             u'name': u'ContractInstantiation',
-    #             u'params': [
-    #                 {
-    #                     u'name': 'sender',
-    #                     u'value': self.bot.web3.eth.coinbase
-    #                 },
-    #                 {
-    #                     u'name': 'instantiation',
-    #                     u'value': logs[1][u'params'][1][u'value']
-    #                 }
-    #             ]
-    #         },
-    #         logs[1]
-    #     )
+    def test_init(self):
+        self.assertEquals(self.bot.last_abi_datetime, datetime.fromtimestamp(0, timezone.get_current_timezone()))
+
+    def test_next_block(self):
+        self.assertEquals(self.bot.next_block(), 0)
+        self.bot.increase_block()
+        self.assertEquals(self.bot.next_block(), 1)
+
+    def test_update_abis(self):
+        self.assertIsNotNone(self.bot.decoder)
+        self.assertEquals(len(self.bot.decoder.methods), 0)
+        self.assertEquals(self.bot.update_abis(), 0)
+        self.assertEquals(len(self.bot.decoder.methods), 0)
+        # No ABIs
+        AlertFactory()
+        self.assertEquals(self.bot.update_abis(), 5)
+        self.assertEquals(len(self.bot.decoder.methods), 5)
+        self.assertEquals(self.bot.update_abis(), 0)
+        AlertFactory()
+        self.assertEquals(self.bot.update_abis(), 5)
+        self.assertEquals(self.bot.update_abis(), 0)
+
+    def test_get_logs_wrong_block(self):
+        self.assertEquals(self.bot.next_block(), 0)
+        self.assertEqual(0, self.bot.web3.eth.blockNumber)
+        logs = self.bot.get_next_logs()
+        self.assertListEqual([], logs)
+        self.bot.increase_block()
+        self.assertEquals(self.bot.next_block(), 1)
+        self.assertEqual(0, self.bot.web3.eth.blockNumber)
+        self.assertRaises(ValueError, self.bot.get_next_logs)
+
+    def test_get_logs(self):
+        # no logs before transactions
+        logs = self.bot.get_next_logs()
+        self.assertListEqual([], logs)
+
+        # create Wallet Factory contract
+        factory = self.bot.web3.eth.contract(abi, bytecode=bin_hex)
+        self.assertIsNotNone(factory)
+        tx_hash = factory.deploy()
+        self.assertIsNotNone(tx_hash)
+        receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
+        self.assertIsNotNone(receipt)
+        self.assertIsNotNone(receipt.get('contractAddress'))
+        factory_address = receipt[u'contractAddress']
+
+        logs = self.bot.get_next_logs()
+        self.assertListEqual([], logs)
+
+        # send deploy function, will trigger two events
+        self.bot.decoder.add_abi(abi)
+        factory_instance = self.bot.web3.eth.contract(abi, factory_address)
+        owners = self.bot.web3.eth.accounts[0:2]
+        required_confirmations = 1
+        daily_limit = 0
+        txHash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
+        receipt = self.bot.web3.eth.getTransactionReceipt(txHash)
+        self.assertIsNotNone(receipt)
+        self.bot.increase_block()
+        logs = self.bot.get_next_logs()
+        self.assertEqual(2, len(logs))
+        self.assertDictEqual(
+            {
+                u'address': factory_address,
+                u'name': u'OwnersInit',
+                u'params': [
+                    {
+                        u'name': u'owners',
+                        u'value': self.bot.web3.eth.accounts[0:2]
+                    }
+                ]
+            },
+            logs[0]
+        )
+        self.assertDictEqual(
+            {
+                u'address': factory_address,
+                u'name': u'ContractInstantiation',
+                u'params': [
+                    {
+                        u'name': 'sender',
+                        u'value': self.bot.web3.eth.coinbase
+                    },
+                    {
+                        u'name': 'instantiation',
+                        u'value': logs[1][u'params'][1][u'value']
+                    }
+                ]
+            },
+            logs[1]
+        )
+
+    def test_filter_logs(self):
+        # filter empty logs
+        self.assertDictEqual({}, self.bot.filter_logs([]))
+
+        logs = [
+            {
+                u'address': u'0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73',
+                u'name': u'OwnersInit',
+                u'params': [
+                    {
+                        u'name': u'owners',
+                        u'value': u'0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73'
+                    }
+                ]
+            },
+            {
+                u'address': u'0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73',
+                u'name': u'ContractInstantiation',
+                u'params': [
+                    {
+                        u'name': u'sender',
+                        u'value': u'0x65039084CC6f4773291A6ed7dCF5bC3A2e894FF3'
+                    },
+                    {
+                        u'name': u'instantiation',
+                        u'value': u'0xecE9Fa304cC965B00afC186f5D0281a00D3dbBFD',
+                    }
+                ]
+            }
+        ]
+        # filter valid log without saved alert
+        self.assertDictEqual({}, self.bot.filter_logs(logs))
+
+        # filter valid log with alert, event name but no values
+        alert = AlertFactory(abi=dumps(abi), contract=u'0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73')
+        EventFactory(alert=alert, name=u'RandomEvent')
+
+        filtered = self.bot.filter_logs(logs)
+        self.assertEqual(0, len(filtered))
+
+        EventFactory(alert=alert, name=u'OwnersInit')
+
+        filtered = self.bot.filter_logs(logs)
+        self.assertEqual(1, len(filtered))
+
+        event = EventFactory(alert=alert, name=u'ContractInstantiation')
+        event_value = EventValueFactory(event=event, property=u'sender', value=u'wrong_value')
+
+        filtered = self.bot.filter_logs(logs)
+        self.assertEqual(1, len(filtered))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email]))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+
+        event_value.value = u'0x65039084CC6f4773291A6ed7dCF5bC3A2e894FF3'
+        event_value.save()
+
+        filtered = self.bot.filter_logs(logs)
+        self.assertEqual(1, len(filtered))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email]))
+        self.assertEqual(2, len(filtered[alert.dapp.user.email][alert.dapp.name]))
 
     def test_run_cycle(self):
         tx_hash = self.bot.web3.eth.contract(abi, bytecode=bin_hex).deploy()
@@ -280,6 +342,10 @@ class TestDaemon(TestCase):
 
         # block 0, no logs
         self.bot.execute()
+        self.bot.batch.send_mail()
+        self.assertEqual(len(mail.outbox), 0)
 
-        # block 1, 2 logs
+        # block 1, 2 logs, 1 filtered
         self.bot.execute()
+        self.bot.batch.send_mail()
+        self.assertEqual(len(mail.outbox), 1)

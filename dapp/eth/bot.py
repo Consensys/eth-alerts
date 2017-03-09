@@ -7,6 +7,8 @@ from datetime import datetime
 from django.utils import timezone
 from web3 import Web3, HTTPProvider
 from django.conf import settings
+from eth.mail_batch import MailBatch
+from threading import Thread
 
 
 class Bot(Singleton):
@@ -16,6 +18,7 @@ class Bot(Singleton):
         self.decoder = Decoder()
         self.web3 = Web3(HTTPProvider(settings.ETHEREUM_NODE_URL))
         self.last_abi_datetime = datetime.fromtimestamp(0, timezone.get_current_timezone())
+        self.batch = MailBatch()
 
     def next_block(self):
         return models.Daemon.get_solo().block_number
@@ -59,11 +62,24 @@ class Bot(Singleton):
                         if events[0].event_values.count():
                             for param in log[u'params']:
                                 # check value
-                                if events[0].event_values.filter(name=param[u'name'], value=param[u'value']):
-                                    # add value
-                                    pass
+                                if events[0].event_values.filter(property=param[u'name'], value=param[u'value']):
+                                    # add log
+                                    email = alert.dapp.user.email
+                                    dapp_name = alert.dapp.name
+                                    if not filtered.get(email):
+                                        filtered[email] = {}
+                                    if not filtered[email].get(dapp_name):
+                                        filtered[email][dapp_name] = []
+                                    filtered[email][dapp_name].append(log)
                         else:
-                            pass
+                            # add log
+                            email = alert.dapp.user.email
+                            dapp_name = alert.dapp.name
+                            if not filtered.get(email):
+                                filtered[email] = {}
+                            if not filtered[email].get(dapp_name):
+                                filtered[email][dapp_name] = []
+                            filtered[email][dapp_name].append(log)
 
         return filtered
 
@@ -79,6 +95,8 @@ class Bot(Singleton):
             filtered = self.filter_logs(logs)
 
             # add filtered logs to send mail
+            for mail, dapp_logs in filtered.iteritems():
+                self.batch.add_mail(mail, dapp_logs)
 
             # increase block number
             self.increase_block()
@@ -86,3 +104,17 @@ class Bot(Singleton):
         except ValueError:
             # Block not mined yet, so, continue execution
             pass
+
+    def serve(self):
+        while True:
+            self.execute()
+
+    def start(self):
+        self.thread = Thread(target=self.serve)
+        self.thread.start()
+
+    def is_running(self):
+        if self.thread:
+            return self.thread.is_alive()
+        else:
+            return False

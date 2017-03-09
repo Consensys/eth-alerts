@@ -21,6 +21,7 @@ class MailBatch(Singleton):
 
         try:
             for mail, dapp_logs in user_emails.iteritems():
+                # TODO support batch mail, reuse connection
                 send_email('emails/alerts.html', {'dapps': dapp_logs}, mail)
                 del user_emails[mail]
         except Exception:
