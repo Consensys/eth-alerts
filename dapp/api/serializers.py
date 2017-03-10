@@ -115,7 +115,10 @@ class AlertAPISerializer(serializers.ModelSerializer):
         alert_obj = None
 
         try:
-            alert_obj = Alert.objects.get(contract=validated_data.get('contract'))
+            alert_obj = Alert.objects.get(
+                dapp__authentication_code=self.context['request'].auth.authentication_code,
+                contract=validated_data.get('contract')
+            )
         except Alert.DoesNotExist:
             alert_obj = Alert()
             alert_obj.abi = validated_data.get('abi')
