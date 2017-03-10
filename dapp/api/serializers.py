@@ -16,6 +16,7 @@ from events.serializers import (
 )
 from api.utils import get_SHA256
 from api.constants import AUTH_CODE_HEADER
+import json
 
 
 class SignupAPISerializer(serializers.Serializer):
@@ -71,12 +72,20 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
         # ABI
         if data.get('abi'):
-            if not isinstance(data.get('abi'), list):
+            abi = None
+            try:
+                if not isinstance(json.loads(data.get('abi')), list):
+                    raise serializers.ValidationError({
+                        'abi': 'This field is required.'
+                    })
+
+                abi = json.dumps(data.get('abi'))
+            except Exception as e:
                 raise serializers.ValidationError({
                     'abi': 'This field is required.'
                 })
 
-            filtered_data['abi'] = data.get('abi')
+            filtered_data['abi'] = abi
         else:
             raise serializers.ValidationError({
                 'abi': 'This field is required.'
