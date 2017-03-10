@@ -78,14 +78,12 @@ class AlertAPISerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({
                         'abi': 'This field is required.'
                     })
-
-                abi = json.dumps(data.get('abi'))
             except Exception as e:
                 raise serializers.ValidationError({
                     'abi': 'This field is required.'
                 })
 
-            filtered_data['abi'] = abi
+            filtered_data['abi'] = data.get('abi')
         else:
             raise serializers.ValidationError({
                 'abi': 'This field is required.'
