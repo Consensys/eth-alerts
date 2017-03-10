@@ -6,4 +6,4 @@ from solo.models import SingletonModel
 
 
 class Daemon(TimeStampedModel, SingletonModel):
-    block_number = models.BigIntegerField(default=0)
+    block_number = models.IntegerField(default=0)

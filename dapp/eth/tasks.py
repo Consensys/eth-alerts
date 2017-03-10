@@ -6,8 +6,7 @@ from mail_batch import MailBatch
 @shared_task
 def run_bot():
     bot = Bot()
-    if not bot.is_running():
-        bot.start()
+    bot.execute()
 
 
 @shared_task

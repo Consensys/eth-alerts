@@ -3,12 +3,13 @@ from . import models
 from events.models import Alert
 from decoder import Decoder
 from json import loads
-from datetime import datetime
-from django.utils import timezone
 from web3 import Web3, HTTPProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
-from threading import Thread
+
+
+class UnknownBlock(Exception):
+    pass
 
 
 class Bot(Singleton):
@@ -17,104 +18,111 @@ class Bot(Singleton):
         super(Bot, self).__init__()
         self.decoder = Decoder()
         self.web3 = Web3(HTTPProvider(settings.ETHEREUM_NODE_URL))
-        self.last_abi_datetime = datetime.fromtimestamp(0, timezone.get_current_timezone())
         self.batch = MailBatch()
 
     def next_block(self):
         return models.Daemon.get_solo().block_number
 
-    def increase_block(self):
+    def update_block(self):
         daemon = models.Daemon.get_solo()
-        daemon.block_number += 1
-        daemon.save()
+        current = self.web3.eth.blockNumber
+        if daemon.block_number != current:
+            daemon.block_number = current
+            daemon.save()
+            return True
+        else:
+            return False
 
-    def update_abis(self):
-        now = timezone.now()
-        since = self.last_abi_datetime
-        alerts = Alert.objects.filter(created__gte=since)
+    def load_abis(self, contracts):
+        alerts = Alert.objects.filter(contract__in=contracts)
         added = 0
         for alert in alerts:
             added += self.decoder.add_abi(loads(alert.abi))
-        self.last_abi_datetime = now
         return added
 
     def get_next_logs(self):
         block = self.web3.eth.getBlock(self.next_block())
         logs = []
-        for tx in block[u'transactions']:
-            receipt = self.web3.eth.getTransactionReceipt(tx)
-            if receipt.get('logs'):
-                logs.extend(receipt[u'logs'])
-        return self.decoder.decode_logs(logs)
+        if block and block.get(u'hash'):
+            for tx in block[u'transactions']:
+                receipt = self.web3.eth.getTransactionReceipt(tx)
+                if receipt.get('logs'):
+                    logs.extend(receipt[u'logs'])
+            return logs
+        else:
+            raise UnknownBlock
 
-    def filter_logs(self, logs):
-        all_alerts = Alert.objects.all().prefetch_related('events__event_values').prefetch_related('dapp')
+    def filter_logs(self, logs, contracts):
+        # filter by contracts
+        all_alerts = Alert.objects.filter(contract__in=contracts).prefetch_related('events__event_values').prefetch_related('dapp')
         filtered = {}
         for log in logs:
             # get alerts for same log contract (can be many)
             alerts = all_alerts.filter(contract=log[u'address'])
-            if alerts:
-                for alert in alerts:
-                    # Get event names
-                    events = alert.events.filter(name=log[u'name'])
-                    if events.count():
-                        # Get event property, if event property, discard unmatched values
-                        if events[0].event_values.count():
-                            for param in log[u'params']:
-                                # check value
-                                if events[0].event_values.filter(property=param[u'name'], value=param[u'value']):
-                                    # add log
-                                    email = alert.dapp.user.email
-                                    dapp_name = alert.dapp.name
-                                    if not filtered.get(email):
-                                        filtered[email] = {}
-                                    if not filtered[email].get(dapp_name):
-                                        filtered[email][dapp_name] = []
-                                    filtered[email][dapp_name].append(log)
-                        else:
-                            # add log
-                            email = alert.dapp.user.email
-                            dapp_name = alert.dapp.name
-                            if not filtered.get(email):
-                                filtered[email] = {}
-                            if not filtered[email].get(dapp_name):
-                                filtered[email][dapp_name] = []
-                            filtered[email][dapp_name].append(log)
+
+            for alert in alerts:
+                # Get event names
+                events = alert.events.filter(name=log[u'name'])
+                if events.count():
+                    # Get event property, if event property, discard unmatched values
+                    if events[0].event_values.count():
+                        # todo check that all parameters check in value or doesn't exist
+                        # todo invert the loop, iterate over event_values no log params
+                        for param in log[u'params']:
+                            # check value
+                            if events[0].event_values.filter(property=param[u'name'], value=param[u'value']):
+                                # add log
+                                email = alert.dapp.user.email
+                                dapp_name = alert.dapp.name
+                                if not filtered.get(email):
+                                    filtered[email] = {}
+                                if not filtered[email].get(dapp_name):
+                                    filtered[email][dapp_name] = []
+                                filtered[email][dapp_name].append(log)
+                    else:
+                        # add log
+                        email = alert.dapp.user.email
+                        dapp_name = alert.dapp.name
+                        if not filtered.get(email):
+                            filtered[email] = {}
+                        if not filtered[email].get(dapp_name):
+                            filtered[email][dapp_name] = []
+                        filtered[email][dapp_name].append(log)
 
         return filtered
 
     def execute(self):
 
-        # update decoder with last abi's
-        self.update_abis()
+        # update block number
+        if self.update_block():
+            self.update_block()
 
-        # get block and decode logs
-        try:
-            logs = self.get_next_logs()
-            # If decoded, filter correct logs and group by dapp and mail
-            filtered = self.filter_logs(logs)
+            # get block and decode logs
+            try:
+                # first get undecoded logs
+                logs = self.get_next_logs()
 
-            # add filtered logs to send mail
-            for mail, dapp_logs in filtered.iteritems():
-                self.batch.add_mail(mail, dapp_logs)
+                # get contract addresses
+                contracts = []
+                for log in logs:
+                    contracts.append(log[u'address'])
+                contracts = set(contracts)
 
-            # increase block number
-            self.increase_block()
+                # load abi's from alerts with contract addresses
+                self.load_abis(contracts)
 
-        except ValueError:
-            # Block not mined yet, so, continue execution
-            pass
+                # decode logs
+                decoded = self.decoder.decode_logs(logs)
 
-    def serve(self):
-        while True:
-            self.execute()
+                # If decoded, filter correct logs and group by dapp and mail
+                filtered = self.filter_logs(decoded, contracts)
 
-    def start(self):
-        self.thread = Thread(target=self.serve)
-        self.thread.start()
+                # add filtered logs to send mail
+                for mail, dapp_logs in filtered.iteritems():
+                    self.batch.add_mail(mail, dapp_logs)
 
-    def is_running(self):
-        if self.thread:
-            return self.thread.is_alive()
-        else:
-            return False
+            except ValueError:
+                # Block not mined yet, so, continue execution
+                pass
+
+        # if blocknumber is the same, do nothing

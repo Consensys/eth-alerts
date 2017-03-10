@@ -53,7 +53,7 @@ DATABASE_NAME="fs"
 CLUSTER_NAME="main"
 if ! su postgres -c "pg_lsclusters"| grep -q CLUSTER_NAME; then
     pg_createcluster --start --locale=en_US.UTF-8 9.3 CLUSTER_NAME
-fi
+vfi
 su postgres -c "psql -tAc \\\"CREATE USER ${DATABASE_NAME} WITH CREATEDB PASSWORD '123456';\\\""
 if ! su postgres -c "psql -l"|grep -q fs; then
     su postgres -c "createdb -T template1 -O ${DATABASE_NAME} ${DATABASE_NAME}"
@@ -90,6 +90,7 @@ Vagrant.configure(2) do |config|
 
   config.ssh.forward_agent = true
   config.vm.network :forwarded_port, host: 8050, guest: 8050
+  config.vm.network :forwarded_port, host: 8545, guest: 8545
   config.vm.network :forwarded_port, host: 8080, guest: 8080
 
   config.vm.provision "shell", inline: $dependencies

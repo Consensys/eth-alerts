@@ -250,8 +250,8 @@ SWAGGER_SETTINGS = {
 
 # DJANGO SOLO CONFIGURATION
 # ------------------------------------------------------------------------------
-SOLO_CACHE = 'default'
-SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
+# SOLO_CACHE = 'default'
+# SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
 
 
 # ETHEREUM NODE CONFIGURATION

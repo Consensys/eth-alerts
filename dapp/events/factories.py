@@ -35,10 +35,7 @@ class AlertFactory(factory.DjangoModelFactory):
         model = models.Alert
 
     dapp = factory.SubFactory(DAppFactory)
-
-    @factory.LazyAttribute
-    def contract(self):
-        return "0x6ca9cd49794d2e0618b9e7a8562948aabe2ef331"
+    contract = factory.Sequence(lambda n: '0x{:040d}'.format(n))
 
     @factory.LazyAttribute
     def abi(self):
