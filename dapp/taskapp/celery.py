@@ -13,7 +13,6 @@ from celery import Celery
 if not settings.configured:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings.local')
 
-
 app = Celery('alerts')
 
 

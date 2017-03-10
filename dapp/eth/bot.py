@@ -6,7 +6,7 @@ from json import loads
 from web3 import Web3, HTTPProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
-
+from celery.contrib import rdb
 
 class UnknownBlock(Exception):
     pass
@@ -38,7 +38,10 @@ class Bot(Singleton):
         alerts = Alert.objects.filter(contract__in=contracts)
         added = 0
         for alert in alerts:
-            added += self.decoder.add_abi(loads(alert.abi))
+            try:
+                added += self.decoder.add_abi(loads(alert.abi))
+            except ValueError:
+                pass
         return added
 
     def get_logs(self, block_number):
@@ -116,6 +119,5 @@ class Bot(Singleton):
                 self.batch.add_mail(mail, dapp_logs)
 
         # if blocknumber is the same, do nothing
-
         # Send mails in batch
         self.batch.send_mail()

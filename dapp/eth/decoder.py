@@ -2,6 +2,7 @@ from ethereum.utils import sha3
 from utils import Singleton
 from eth_abi import decode_abi
 
+
 class Decoder(Singleton):
 
     methods = {}
@@ -9,7 +10,7 @@ class Decoder(Singleton):
     def add_abi(self, abis):
         added = 0
         for item in abis:
-            if item[u'name']:
+            if item.get(u'name'):
                 # Generate methodID and link it with the abi
                 method_header = "{}({})".format(item[u'name'],
                                                 ','.join(map(lambda input: input[u'type'], item[u'inputs'])))
@@ -20,7 +21,7 @@ class Decoder(Singleton):
 
     def remove_abi(self, abis):
         for item in abis:
-            if item[u'name']:
+            if item.get(u'name'):
                 # Generate methodID and link it with the abi
                 method_header = "{}({})".format(item[u'name'],
                                                 ','.join(map(lambda input: input[u'type'], item[u'inputs'])))
@@ -30,7 +31,6 @@ class Decoder(Singleton):
 
     def decode_logs(self, logs):
         decoded = []
-
         for log in logs:
             method_id = log[u'topics'][0][2:]
             if self.methods.get(method_id):
@@ -53,7 +53,7 @@ class Decoder(Singleton):
                     }
 
                     if param[u'indexed']:
-                        decoded_p[u'value'] = param[u'topics'][topics_i]
+                        decoded_p[u'value'] = log[u'topics'][topics_i]
                         topics_i += 1
                     else:
                         decoded_p[u'value'] = decoded_data[data_i]
