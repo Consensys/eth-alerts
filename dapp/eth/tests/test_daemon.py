@@ -208,7 +208,7 @@ class TestDaemon(TestCase):
 
     def test_get_logs(self):
         # no logs before transactions
-        logs = self.bot.get_next_logs()
+        logs = self.bot.get_logs(0)
         self.assertListEqual([], logs)
 
         # create Wallet Factory contract
@@ -221,7 +221,7 @@ class TestDaemon(TestCase):
         self.assertIsNotNone(receipt.get('contractAddress'))
         factory_address = receipt[u'contractAddress']
 
-        logs = self.bot.get_next_logs()
+        logs = self.bot.get_logs(0)
         self.assertListEqual([], logs)
 
         # send deploy function, will trigger two events
@@ -230,12 +230,12 @@ class TestDaemon(TestCase):
         owners = self.bot.web3.eth.accounts[0:2]
         required_confirmations = 1
         daily_limit = 0
-        txHash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
-        receipt = self.bot.web3.eth.getTransactionReceipt(txHash)
+        tx_hash = factory_instance.transact().create(owners, required_confirmations, daily_limit)
+        receipt = self.bot.web3.eth.getTransactionReceipt(tx_hash)
         self.assertIsNotNone(receipt)
         self.assertTrue(self.bot.update_block())
         self.assertFalse(self.bot.update_block())
-        logs = self.bot.get_next_logs()
+        logs = self.bot.get_logs(1)
         self.assertEqual(2, len(logs))
         decoded = self.bot.decoder.decode_logs(logs)
         self.assertEqual(2, len(decoded))
@@ -326,6 +326,20 @@ class TestDaemon(TestCase):
 
         event_value.value = u'0x65039084CC6f4773291A6ed7dCF5bC3A2e894FF3'
         event_value.save()
+
+        filtered = self.bot.filter_logs(logs, contracts)
+        self.assertEqual(1, len(filtered))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email]))
+        self.assertEqual(2, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+
+        event_value2 = EventValueFactory(event=event, property=u'instantiation', value=u'wrong_value')
+        filtered = self.bot.filter_logs(logs, contracts)
+        self.assertEqual(1, len(filtered))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email]))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+
+        event_value2.value = u'0xecE9Fa304cC965B00afC186f5D0281a00D3dbBFD'
+        event_value2.save()
 
         filtered = self.bot.filter_logs(logs, contracts)
         self.assertEqual(1, len(filtered))

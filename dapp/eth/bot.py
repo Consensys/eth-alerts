@@ -26,12 +26,13 @@ class Bot(Singleton):
     def update_block(self):
         daemon = models.Daemon.get_solo()
         current = self.web3.eth.blockNumber
-        if daemon.block_number != current:
+        if daemon.block_number < current:
+            blocks_to_update = range(daemon.block_number+1, current+1)
             daemon.block_number = current
             daemon.save()
-            return True
+            return blocks_to_update
         else:
-            return False
+            return []
 
     def load_abis(self, contracts):
         alerts = Alert.objects.filter(contract__in=contracts)
@@ -40,8 +41,8 @@ class Bot(Singleton):
             added += self.decoder.add_abi(loads(alert.abi))
         return added
 
-    def get_next_logs(self):
-        block = self.web3.eth.getBlock(self.next_block())
+    def get_logs(self, block_number):
+        block = self.web3.eth.getBlock(block_number)
         logs = []
         if block and block.get(u'hash'):
             for tx in block[u'transactions']:
@@ -65,22 +66,17 @@ class Bot(Singleton):
                 events = alert.events.filter(name=log[u'name'])
                 if events.count():
                     # Get event property, if event property, discard unmatched values
+                    add_event = True
                     if events[0].event_values.count():
-                        # todo check that all parameters check in value or doesn't exist
-                        # todo invert the loop, iterate over event_values no log params
-                        for param in log[u'params']:
-                            # check value
-                            if events[0].event_values.filter(property=param[u'name'], value=param[u'value']):
-                                # add log
-                                email = alert.dapp.user.email
-                                dapp_name = alert.dapp.name
-                                if not filtered.get(email):
-                                    filtered[email] = {}
-                                if not filtered[email].get(dapp_name):
-                                    filtered[email][dapp_name] = []
-                                filtered[email][dapp_name].append(log)
-                    else:
-                        # add log
+                        # check that all parameters check in value or doesn't exist
+                        for event_value in events[0].event_values.iterator():
+                            for param in log[u'params']:
+                                if event_value.property == param[u'name']:
+                                    if event_value.value != param[u'value']:
+                                        add_event = False
+
+                    # add log
+                    if add_event:
                         email = alert.dapp.user.email
                         dapp_name = alert.dapp.name
                         if not filtered.get(email):
@@ -94,35 +90,32 @@ class Bot(Singleton):
     def execute(self):
 
         # update block number
-        if self.update_block():
-            self.update_block()
+        # get blocks and decode logs
+        for block in self.update_block():
 
-            # get block and decode logs
-            try:
-                # first get undecoded logs
-                logs = self.get_next_logs()
+            # first get un-decoded logs
+            logs = self.get_logs(block)
 
-                # get contract addresses
-                contracts = []
-                for log in logs:
-                    contracts.append(log[u'address'])
-                contracts = set(contracts)
+            # get contract addresses
+            contracts = []
+            for log in logs:
+                contracts.append(log[u'address'])
+            contracts = set(contracts)
 
-                # load abi's from alerts with contract addresses
-                self.load_abis(contracts)
+            # load abi's from alerts with contract addresses
+            self.load_abis(contracts)
 
-                # decode logs
-                decoded = self.decoder.decode_logs(logs)
+            # decode logs
+            decoded = self.decoder.decode_logs(logs)
 
-                # If decoded, filter correct logs and group by dapp and mail
-                filtered = self.filter_logs(decoded, contracts)
+            # If decoded, filter correct logs and group by dapp and mail
+            filtered = self.filter_logs(decoded, contracts)
 
-                # add filtered logs to send mail
-                for mail, dapp_logs in filtered.iteritems():
-                    self.batch.add_mail(mail, dapp_logs)
-
-            except ValueError:
-                # Block not mined yet, so, continue execution
-                pass
+            # add filtered logs to send mail
+            for mail, dapp_logs in filtered.iteritems():
+                self.batch.add_mail(mail, dapp_logs)
 
         # if blocknumber is the same, do nothing
+
+        # Send mails in batch
+        self.batch.send_mail()
