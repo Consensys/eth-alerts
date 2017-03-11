@@ -99,7 +99,7 @@ CACHES = {
 # STATIC FILE CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+STATIC_ROOT = ROOT_DIR.path('staticfiles')
 
 STATIC_URL = '/static/'
 
@@ -117,7 +117,7 @@ STATICFILES_FINDERS = (
 # MEDIA CONFIGURATION
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = str(ROOT_DIR('media'))
+MEDIA_ROOT = ROOT_DIR.path('media')
 MEDIA_URL = '/media/'
 
 # GENERAL CONFIGURATION
