@@ -9,6 +9,9 @@ ALLOWED_HOSTS = [".gnosis.pm"]
 
 INSTALLED_APPS += ("gunicorn", )
 
+if DEBUG is False:
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
 EMAIL_HOST = env('EMAIL_HOST', default='smtp.mandrillapp.com')
