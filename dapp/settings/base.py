@@ -284,7 +284,7 @@ ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
 INSTALLED_APPS += ('taskapp.celery.CeleryConfig',)
 INSTALLED_APPS += ('kombu.transport.django',)
 INSTALLED_APPS += ('djcelery',)
-BROKER_URL = env("CELERY_BROKER_URL", default='django://')
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default='django://')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
