@@ -6,7 +6,6 @@ from json import loads
 from web3 import Web3, HTTPProvider, RPCProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
-from celery.contrib import rdb
 
 class UnknownBlock(Exception):
     pass
@@ -100,12 +99,9 @@ class Bot(Singleton):
 
         # update block number
         # get blocks and decode logs
-        rdb.set_trace()
         for block in self.update_block():
-            rdb.set_trace()
             # first get un-decoded logs
             logs = self.get_logs(block)
-            rdb.set_trace()
             # get contract addresses
             contracts = []
             for log in logs:
