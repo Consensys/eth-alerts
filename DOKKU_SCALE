@@ -1,0 +1,4 @@
+web=1
+migrate=0
+worker=1
+scheduler=1

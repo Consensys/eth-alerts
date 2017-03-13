@@ -3,10 +3,9 @@ from . import models
 from events.models import Alert
 from decoder import Decoder
 from json import loads
-from web3 import Web3, HTTPProvider
+from web3 import Web3, HTTPProvider, RPCProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
-from celery.contrib import rdb
 
 class UnknownBlock(Exception):
     pass
@@ -17,7 +16,13 @@ class Bot(Singleton):
     def __init__(self):
         super(Bot, self).__init__()
         self.decoder = Decoder()
-        self.web3 = Web3(HTTPProvider(settings.ETHEREUM_NODE_URL))
+        self.web3 = Web3(
+            RPCProvider(
+                host=settings.ETHEREUM_NODE_HOST,
+                port=settings.ETHEREUM_NODE_PORT,
+                ssl=settings.ETHEREUM_NODE_SSL
+            )
+        )
         self.batch = MailBatch()
 
     def next_block(self):
@@ -95,10 +100,8 @@ class Bot(Singleton):
         # update block number
         # get blocks and decode logs
         for block in self.update_block():
-
             # first get un-decoded logs
             logs = self.get_logs(block)
-
             # get contract addresses
             contracts = []
             for log in logs:
