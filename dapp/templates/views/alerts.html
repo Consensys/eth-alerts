@@ -1,0 +1,37 @@
+{% extends 'views/base.html' %}
+{% block container %}
+    {% if dapp %}
+
+        {% if message %}
+            {{ message }}
+        {% endif %}
+
+        <p><b>DAPP</b>: {{ dapp.name }}</p>
+        {% if alerts %}
+            {% for alert in alerts %}
+                <div>
+                    <p>Contract: {{ alert.contract }}</p>
+                </div>
+
+                <form role="form" action="" method="post">
+
+                {% csrf_token %}
+
+                {% for abi in alert.abi %}
+                    {% if abi.name in alert.selected_events %}
+                        <input type="checkbox" name="{{ abi.name }}" checked />{{ abi.name }}<br/>
+                    {% else %}
+                        <input type="checkbox" name="{{ abi.name }}"/>{{ abi.name }}<br/>
+                    {% endif %}
+                {% endfor %}
+
+                <input type="hidden" name="contract" value="{{ alert.contract }}" />
+                <input type="submit" value="Save" />
+
+                </form>
+            {% endfor %}
+        {% else %}
+            <p>There are no alerts for this DAPP.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

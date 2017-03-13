@@ -159,25 +159,3 @@ class AlertAPISerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {}
-
-
-class AlertDeleteAPISerializer(serializers.Serializer):
-
-    class Meta:
-        fields = ['address', 'eventName']
-
-    address = serializers.CharField()
-    eventName = serializers.CharField()
-
-    def validate(self, attrs):
-        if not attrs.get('address'):
-            raise serializers.ValidationError({
-                'address': 'This field is required.'
-            })
-
-        if not attrs.get('eventName'):
-            raise serializers.ValidationError({
-                'eventName': 'This field is required.'
-            })
-
-        return attrs

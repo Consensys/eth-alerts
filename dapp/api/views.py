@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from serializers import AlertAPISerializer, AlertDeleteAPISerializer, SignupAPISerializer
+from serializers import AlertAPISerializer, SignupAPISerializer
 from authentication import AuthCodeAuthentication, AlertOwnerAuthentication
 from utils import send_email
-from events.models import Alert, Event, User
-from api.utils import get_SHA256
+from events.models import Alert, DApp, Event
+from django.views.generic import TemplateView, RedirectView
+import json
 
 
 class SignupView(CreateAPIView):
@@ -49,29 +50,9 @@ class AlertView(CreateAPIView):
             AlertOwnerAuthentication().authenticate(request)
             return super(AlertView, self).post(request, *args, **kwargs)
 
-    """def delete(self, request):
-        serializer = AlertDeleteAPISerializer(data=request.data)
-
-        if serializer.is_valid():
-            address = serializer.data.get('address')
-            eventName = serializer.data.get('eventName')
-
-            # Find alert
-            events_query_set = Event.objects.filter(contract__address=address)
-            if events_query_set.count() == 1:
-                event = events_query_set[0]
-                email_to = event.alert.email.email
-                # Generate API URL
-                api_url = reverse('api:alert-delete-confirm', kwargs={'delete_key':event.alert.delete_key})
-                absolute_url = request.build_absolute_uri(api_url)
-                # Send Email
-                send_email('emails/alert_deletion_request.txt', {'alert': event.alert, 'url': absolute_url}, email_to)
-
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)"""
+    def delete(self, request):
+        self.request.auth.delete()
+        return Response(status=status.HTTP_200_OK, data={})
 
     def get(self, request):
 
@@ -94,39 +75,70 @@ class AlertView(CreateAPIView):
         except Alert.DoesNotExist:
             return Response(status=status.HTTP_200_OK, data={})
 
-"""
-class AlertConfirmView(APIView):
 
-    def get(self, request, confirmation_key):
-        # Get Alert by confirmartion_key
-        alerts_query_set = Alert.objects.filter(confirmation_key=confirmation_key)
+class AdminView(TemplateView, RedirectView):
+    template_name = 'views/alerts.html'
 
-        if alerts_query_set.count() == 1:
-            alert = alerts_query_set[0]
-            alert.is_confirmed = True
-            alert.confirmation_key = get_SHA256()
-            alert.save()
+    def get_context_data(self, **kwargs):
+        auth_code = self.request.GET.get('code')
+        if auth_code:
+            try:
+                dapp = DApp.objects.get(authentication_code=auth_code)
+                alerts = dapp.alert_set.all()
+                kwargs['dapp'] = dapp
 
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+                for alert in alerts:
+                    selected_events = []
+                    alert.abi = json.loads(alert.abi)
+                    alert.abi = filter(lambda item: item.get('type') == 'event', alert.abi)
+                    for event in alert.events.all():
+                        selected_events.append(event.name)
+
+                    setattr(alert, 'selected_events', selected_events)
+                kwargs['alerts'] = alerts
+            except DApp.DoesNotExist as e:
+                kwargs['dapp'] = None
+                kwargs['alerts'] = None
+
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        """Updates an Alert and its events"""
+        events = filter(lambda item: item[0] != 'csrfmiddlewaretoken' and item[0] != 'contract', request.POST.items())
+        auth_code = request.GET.get('code')
+        contract = request.POST.get('contract')
+        return_message = ''
+
+        if auth_code:
+            try:
+                alert_obj = Alert.objects.get(
+                    dapp__authentication_code=auth_code,
+                    contract=contract
+                )
+            except Alert.DoesNotExist:
+                return self.get(request, *args, **kwargs)
+
+            if events:
+                events_obj = Event.objects.filter(alert=alert_obj.id)
+                events_obj.delete()
+
+                for event in events:
+                    event_obj = Event()
+                    event_obj.name = event[0]
+                    event_obj.alert = alert_obj
+                    event_obj.save()
+
+                return_message = 'Alert was updated.'
+            else:
+                # Delete Alert
+                alert_obj.delete()
+                return_message = 'Alert was deleted.'
+
+        kwargs['message'] = return_message
+        return self.get(request, *args, **kwargs)
 
 
 
 
-class AlertDeleteView(CreateAPIView):
-
-    def get(self, request, delete_key):
-        # Get Alert by delete_key
-        alerts_query_set = Alert.objects.filter(delete_key=delete_key)
-
-        if alerts_query_set.count() == 1:
-            alert = alerts_query_set[0]
-            alert.delete()
-
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-"""
 
 

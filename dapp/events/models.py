@@ -27,7 +27,7 @@ class Alert(TimeStampedModel):
     class Meta:
         unique_together = ('dapp', 'contract')
 
-    dapp = models.ForeignKey(DApp, on_delete=models.DO_NOTHING)
+    dapp = models.ForeignKey(DApp, on_delete=models.CASCADE)
     abi = models.TextField()
     contract = models.TextField()
 
