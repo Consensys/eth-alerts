@@ -277,14 +277,16 @@ SWAGGER_SETTINGS = {
 
 # ETHEREUM NODE CONFIGURATION
 # ------------------------------------------------------------------------------
-ETHEREUM_NODE_URL = env('ETHEREUM_NODE_URL', default='http://localhost:8545')
+ETHEREUM_NODE_PORT = env('ETHEREUM_NODE_PORT', default=8545)
+ETHEREUM_NODE_HOST = env('ETHEREUM_NODE_HOST', default='localhost')
+ETHEREUM_NODE_SSL = env('ETHEREUM_NODE_SSL', default=False)
 
 # CELERY CONFIGURATION
 # ------------------------------------------------------------------------------
 INSTALLED_APPS += ('taskapp.celery.CeleryConfig',)
 INSTALLED_APPS += ('kombu.transport.django',)
 INSTALLED_APPS += ('djcelery',)
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default='django://')
+BROKER_URL = env("CELERY_BROKER_URL", default='django://')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
