@@ -1,12 +1,19 @@
 {% extends 'views/base.html' %}
 {% block container %}
+
+    {% if message %}
+        {{ message }}
+    {% endif %}
+
     {% if dapp %}
-
-        {% if message %}
-            {{ message }}
-        {% endif %}
-
-        <p><b>DAPP</b>: {{ dapp.name }}</p>
+        <form role="form" action="" method="post">
+            {% csrf_token %}
+            <p>
+                <b>DAPP</b>: {{ dapp.name }}
+                <input type="hidden" name="operation_type" value="DELETE" />
+                <input type="submit" value="Delete DApp" />
+            </p>
+        </form>
         {% if alerts %}
             {% for alert in alerts %}
                 <div>

@@ -42,8 +42,7 @@ class SignupAPISerializer(serializers.Serializer):
         dapp_obj.user = user_obj
         dapp_obj.save()
 
-        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%' + AUTH_CODE_HEADER + '%}', '?%s=%s' % (
-                                                                               AUTH_CODE_HEADER,
+        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%' + AUTH_CODE_HEADER + '%}', '%s' % (
                                                                                dapp_obj.authentication_code)
                                                                             )
 

@@ -107,32 +107,42 @@ class AdminView(TemplateView, RedirectView):
         events = filter(lambda item: item[0] != 'csrfmiddlewaretoken' and item[0] != 'contract', request.POST.items())
         auth_code = request.GET.get('code')
         contract = request.POST.get('contract')
+        operation_type = request.POST.get('operation_type')
         return_message = ''
 
         if auth_code:
-            try:
-                alert_obj = Alert.objects.get(
-                    dapp__authentication_code=auth_code,
-                    contract=contract
-                )
-            except Alert.DoesNotExist:
-                return self.get(request, *args, **kwargs)
+            if operation_type == 'DELETE':
+                try:
+                    dapp_obj = DApp.objects.get(authentication_code=auth_code)
+                    dapp_obj.delete()
+                    return_message = 'DApp was deleted'
+                except DApp.DoesNotExist:
+                    return self.get(request, *args, **kwargs)
 
-            if events:
-                events_obj = Event.objects.filter(alert=alert_obj.id)
-                events_obj.delete()
-
-                for event in events:
-                    event_obj = Event()
-                    event_obj.name = event[0]
-                    event_obj.alert = alert_obj
-                    event_obj.save()
-
-                return_message = 'Alert was updated.'
             else:
-                # Delete Alert
-                alert_obj.delete()
-                return_message = 'Alert was deleted.'
+                try:
+                    alert_obj = Alert.objects.get(
+                        dapp__authentication_code=auth_code,
+                        contract=contract
+                    )
+                except Alert.DoesNotExist:
+                    return self.get(request, *args, **kwargs)
+
+                if events:
+                    events_obj = Event.objects.filter(alert=alert_obj.id)
+                    events_obj.delete()
+
+                    for event in events:
+                        event_obj = Event()
+                        event_obj.name = event[0]
+                        event_obj.alert = alert_obj
+                        event_obj.save()
+
+                    return_message = 'Alert was updated.'
+                else:
+                    # Delete Alert
+                    alert_obj.delete()
+                    return_message = 'Alert was deleted.'
 
         kwargs['message'] = return_message
         return self.get(request, *args, **kwargs)
