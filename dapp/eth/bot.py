@@ -7,6 +7,7 @@ from web3 import Web3, HTTPProvider, RPCProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
 
+
 class UnknownBlock(Exception):
     pass
 
