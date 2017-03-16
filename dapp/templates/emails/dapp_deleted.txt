@@ -1,0 +1,11 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% block subject %}
+[{{site.name}}]
+{% endblock %}
+
+{% block body %}
+
+Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
+
+{% endblock %}

@@ -51,7 +51,12 @@ class AlertView(CreateAPIView):
             return super(AlertView, self).post(request, *args, **kwargs)
 
     def delete(self, request):
+        email_to = self.request.user.email
+        auth_code = self.request.auth.authentication_code
+        dapp_name = self.request.auth.name
         self.request.auth.delete()
+        # Send email
+        send_email('emails/dapp_deleted.txt', {'auth_code': auth_code, 'dapp_name': dapp_name}, email_to)
         return Response(status=status.HTTP_200_OK, data={})
 
     def get(self, request):
