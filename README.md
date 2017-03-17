@@ -68,4 +68,3 @@ The project consists of four Django applications:
 
 
 Email templates are stored in /templates/emails directory.
-
