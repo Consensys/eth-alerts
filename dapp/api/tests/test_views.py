@@ -18,7 +18,13 @@ class TestAlertView(APITestCase):
         self.factory = APIFactory()
         self.signup_data = self.factory.signup_data
         signup_response = self.client.post(reverse('api:signup'), data=dumps(self.signup_data), content_type='application/json')
-        self.auth_code = signup_response.data.get('callback').split(AUTH_CODE_HEADER + '=')[1]
+        self.assertEquals(signup_response.status_code, status.HTTP_201_CREATED)
+        callback = signup_response.data.get('callback')
+        self.assertIsNotNone(callback)
+        matches = callback.split(AUTH_CODE_HEADER + '=')
+        self.assertIsNotNone(matches)
+        self.assertEqual(len(matches), 2)
+        self.auth_code = callback.split(AUTH_CODE_HEADER + '=')[1]
         self.auth_header = dict()
         self.auth_header[DJANGO_AUTH_CODE_HEADER] = self.auth_code
 
