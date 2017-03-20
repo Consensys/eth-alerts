@@ -68,3 +68,14 @@ The project consists of four Django applications:
 
 
 Email templates are stored in /templates/emails directory.
+
+REST API ENDPOINTS
+--------
+
+| HTTP VERB | ROUTE | HEADERS | QUERY PARAMS | DESCRIPTION |
+|----------------------|----------------|---------------------|---------------------|---------------------|
+|POST| /alert/signup/ | none | none | Subscribes a user to the service |
+|POST| /alert/ | auth-code: String | none | Creates a new Alert |
+|GET| /alert/ | auth-code: String | contract : String | Retrieves an Alert data |
+|DELETE| /alert/ | auth-code: String | none | Deletes a user data along with its alerts |
+|[DJANO VIEW] GET| /alert/admin/ | none | code: String | View with all alerts related to the query code |
