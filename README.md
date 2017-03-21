@@ -79,3 +79,23 @@ REST API ENDPOINTS
 |GET| /alert/ | auth-code: String | contract : String | Retrieves an Alert data |
 |DELETE| /alert/ | auth-code: String | none | Deletes the DApp data along with its alerts |
 |[DJANGO VIEW] GET| /alert/admin/ | none | code: String | View with all alerts related to the query code |
+
+RUNNING CELERY
+--------
+In order to execute the Celery worker and scheduler, which take care of sending email notifications to users, we have to ssh into two separate terminals and type the following:
+    
+    $ cd /vagrant/
+    $ celery -A taskapp.celery beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD/dapp"
+    
+    $ cd /vagrant/
+    $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/dapp" -c 1
+    
+Now we have to declare the 'periodic tasks' executed by Celery. To achieve this we need to create a Django superuser and access the Admin web page. Once there, we can click on DJCELERY and then on Periodic tasks.
+
+Create a new object and provide the following values:
+
+* Name: Gnosis Alerts
+* Task: eth.tasks.run_bot
+* Enabled: checked
+* Interval: 10 seconds
+
