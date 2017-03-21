@@ -26,7 +26,9 @@ class SignupView(CreateAPIView):
         super(SignupView, self).perform_create(serializer)
         # Send email
         email_to = serializer.instance.email
-        send_email('emails/signup_created.txt', {'callback': serializer.instance.callback}, email_to)
+        send_email('emails/signup_created.html',
+                   {'callback': serializer.instance.callback, 'authentication_code': serializer.instance.authentication_code},
+                   email_to)
 
 
 class AlertView(CreateAPIView):
@@ -56,12 +58,10 @@ class AlertView(CreateAPIView):
         dapp_name = self.request.auth.name
         self.request.auth.delete()
         # Send email
-        send_email('emails/dapp_deleted.txt', {'auth_code': auth_code, 'dapp_name': dapp_name}, email_to)
+        send_email('emails/dapp_deleted.html', {'auth_code': auth_code, 'dapp_name': dapp_name}, email_to)
         return Response(status=status.HTTP_200_OK, data={})
 
     def get(self, request):
-
-        # email = request.query_params.get('email')
         alert_obj = None
         response_data = dict()
         try:

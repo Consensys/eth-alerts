@@ -88,11 +88,15 @@ class Bot(Singleton):
                     if add_event:
                         email = alert.dapp.user.email
                         dapp_name = alert.dapp.name
+                        dapp_code = alert.dapp.authentication_code
                         if not filtered.get(email):
                             filtered[email] = {}
                         if not filtered[email].get(dapp_name):
-                            filtered[email][dapp_name] = []
-                        filtered[email][dapp_name].append(log)
+                            # filtered[email][dapp_name] = []
+                            filtered[email][dapp_name] = dict(authentication_code=dapp_code, logs=[])
+
+                        # filtered[email][dapp_name].append(log)
+                        filtered[email][dapp_name].get('logs').append(log)
 
         return filtered
 

@@ -10,5 +10,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/tmp/app-messages'
 EMAIL_LOG_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 SERVER_EMAIL = '127.0.0.1'
-
+# EMAIL_HOST = '0.0.0.0'
+EMAIL_PORT = 2525
 CELERY_ALWAYS_EAGER = True
+ETHEREUM_NODE_SSL=""
+SERVER_HOST = 'http://localhost:8282'

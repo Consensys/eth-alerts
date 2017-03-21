@@ -22,7 +22,7 @@ import json
 class SignupAPISerializer(serializers.Serializer):
 
     email = serializers.EmailField()
-    callback = serializers.CharField()
+    callback = serializers.CharField(required=False, allow_blank=True)
     name = serializers.CharField() # dapp name
 
     def create(self, validated_data):
@@ -42,10 +42,14 @@ class SignupAPISerializer(serializers.Serializer):
         dapp_obj.user = user_obj
         dapp_obj.save()
 
-        user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%' + AUTH_CODE_HEADER + '%}', '%s' % (
+        if validated_data.get('callback'):
+            user_obj.__dict__['callback'] = validated_data.get('callback').replace('{%' + AUTH_CODE_HEADER + '%}', '%s' % (
                                                                                dapp_obj.authentication_code)
                                                                             )
+        else:
+            user_obj.__dict__['callback'] = None
 
+        user_obj.__dict__['authentication_code'] = dapp_obj.authentication_code
         return user_obj
 
     def to_representation(self, instance):

@@ -10,7 +10,7 @@
         {% for dapp, dapp_logs in dapps.items %}
             Dapp {{dapp}} had {{dapp_logs|length}} events:
             <ul>
-            {% for log in dapp_logs %}
+            {% for log in dapp_logs.logs %}
                 <li>
                     Event {{ log.name }} triggered by contract {{ log.address }}
                     <ul>
@@ -24,7 +24,7 @@
             {% endfor %}
             </ul>
 
-            <a href=''>Unsubscribe</a>.
+            <a href='{{ unsubscribe_url }}{{ dapp_logs.authentication_code }}'>Unsubscribe</a>.
         {% endfor %}
     {% endblock %}
 
