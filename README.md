@@ -77,5 +77,5 @@ REST API ENDPOINTS
 |POST| /alert/signup/ | none | none | Subscribes a user to the service |
 |POST| /alert/ | auth-code: String | none | Creates a new Alert |
 |GET| /alert/ | auth-code: String | contract : String | Retrieves an Alert data |
-|DELETE| /alert/ | auth-code: String | none | Deletes a user data along with its alerts |
-|[DJANO VIEW] GET| /alert/admin/ | none | code: String | View with all alerts related to the query code |
+|DELETE| /alert/ | auth-code: String | none | Deletes the DApp data along with its alerts |
+|[DJANGO VIEW] GET| /alert/admin/ | none | code: String | View with all alerts related to the query code |
