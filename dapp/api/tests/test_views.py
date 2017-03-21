@@ -121,14 +121,14 @@ class TestAlertView(APITestCase):
 
         self.assertEquals(delete_response_fails.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        delete_response_success = self.client.post(
+        delete_response_success = self.client.delete(
             reverse('api:alert'),
             data=dumps(create_data),
             content_type='application/json',
             **self.auth_header
         )
 
-        self.assertEquals(status.HTTP_201_CREATED, delete_response_success.status_code)
+        self.assertEquals(status.HTTP_200_OK, delete_response_success.status_code)
 
     def test_creat_no_values(self):
         # Create an Event with no values

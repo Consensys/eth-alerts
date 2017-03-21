@@ -1,7 +1,7 @@
 import factory
 from faker import Factory as FakerFactory
 from dapp.events.factories import UserFactory
-import simplejson
+from api.constants import AUTH_CODE_HEADER
 
 faker = FakerFactory.create()
 
@@ -22,7 +22,7 @@ class APIFactory(factory.Factory):
     class Meta:
         model = Model
 
-    callback = 'https://wallet.gnosis.pm/#/signup{%auth-code%}'
+    callback = 'https://wallet.gnosis.pm/#/signup?' + AUTH_CODE_HEADER + '={%auth-code%}'
 
     @factory.LazyAttribute
     def user(self):
@@ -30,7 +30,7 @@ class APIFactory(factory.Factory):
 
     @factory.LazyAttribute
     def abi(self):
-        data = simplejson.loads('[{"inputs": [{"type": "address", "name": ""}], "constant": true, "name": "isInstantiation",' \
+        data = '[{"inputs": [{"type": "address", "name": ""}], "constant": true, "name": "isInstantiation",' \
                    '"payable": false, "outputs": [{"type": "bool", "name": ""}], "type": "function"},' \
                    '{"inputs": [{"type": "address[]", "name": "_owners"}, {"type": "uint256", "name": "_required"},' \
                    '{"type": "uint256", "name": "_dailyLimit"}], "constant": false, "name": "create", "payable": false,' \
@@ -42,7 +42,7 @@ class APIFactory(factory.Factory):
                    '"payable": false, "outputs": [{"type": "uint256", "name": ""}], "type": "function"},' \
                    '{"inputs": [{"indexed": false, "type": "address", "name": "sender"}, {"indexed": false,' \
                    '"type": "address", "name": "instantiation"}], "type": "event", "name": "ContractInstantiation",' \
-                   '"anonymous": false}]')
+                   '"anonymous": false}]'
 
         return data
 

@@ -322,7 +322,7 @@ class TestDaemon(TestCase):
         filtered = self.bot.filter_logs(logs, contracts)
         self.assertEqual(1, len(filtered))
         self.assertEqual(1, len(filtered[alert.dapp.user.email]))
-        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]['logs']))
 
         event_value.value = u'0x65039084CC6f4773291A6ed7dCF5bC3A2e894FF3'
         event_value.save()
@@ -336,7 +336,7 @@ class TestDaemon(TestCase):
         filtered = self.bot.filter_logs(logs, contracts)
         self.assertEqual(1, len(filtered))
         self.assertEqual(1, len(filtered[alert.dapp.user.email]))
-        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]['logs']))
 
         event_value2.value = u'0xecE9Fa304cC965B00afC186f5D0281a00D3dbBFD'
         event_value2.save()
@@ -344,7 +344,7 @@ class TestDaemon(TestCase):
         filtered = self.bot.filter_logs(logs, contracts)
         self.assertEqual(1, len(filtered))
         self.assertEqual(1, len(filtered[alert.dapp.user.email]))
-        self.assertEqual(2, len(filtered[alert.dapp.user.email][alert.dapp.name]))
+        self.assertEqual(2, len(filtered[alert.dapp.user.email][alert.dapp.name]['logs']))
 
     def test_run_cycle(self):
         tx_hash = self.bot.web3.eth.contract(abi, bytecode=bin_hex).deploy()
