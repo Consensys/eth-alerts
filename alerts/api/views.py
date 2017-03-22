@@ -113,17 +113,45 @@ class AdminView(TemplateView, RedirectView):
         auth_code = request.GET.get('code')
         contract = request.POST.get('contract')
         operation_type = request.POST.get('operation_type')
+        abi = request.POST.get('abi')  # used in add contract form
         return_message = ''
 
         if auth_code:
             if operation_type == 'DELETE':
+                # deletes a DApp and its alerts
                 try:
                     dapp_obj = DApp.objects.get(authentication_code=auth_code)
                     dapp_obj.delete()
                     return_message = 'DApp was deleted'
                 except DApp.DoesNotExist:
                     return self.get(request, *args, **kwargs)
-
+            elif operation_type == 'ADD_CONTRACT':
+                # Creates a new alert for the provided contract
+                try:
+                    kwargs['contract_errors'] = []
+                    json_abi = json.loads(abi)
+                    if abi and isinstance(json_abi, list) and contract:
+                        # check if the alert already exists
+                        dapp_obj = DApp.objects.get(authentication_code=auth_code)
+                        try:
+                            Alert.objects.get(contract=contract, dapp_id=dapp_obj.id)
+                            kwargs['contract_errors'].append("The contract already exists.")
+                        except Alert.DoesNotExist:
+                            # Create the new alert
+                            alert_obj = Alert()
+                            alert_obj.abi = abi
+                            alert_obj.dapp = dapp_obj
+                            alert_obj.contract = contract
+                            alert_obj.save()
+                            return_message = "Contract created, please set the events."
+                    else:
+                        # form errors
+                        if not contract or len(contract) == 0:
+                            kwargs['contract_errors'].append("Contract is mandatory")
+                        if not abi or len(abi) == 0 or not isinstance(json.loads(abi), list):
+                            kwargs['contract_errors'].append("Please provide a valid ABI string")
+                except ValueError:
+                    kwargs['contract_errors'].append("Please provide a valid ABI string")
             else:
                 try:
                     alert_obj = Alert.objects.get(
@@ -145,7 +173,7 @@ class AdminView(TemplateView, RedirectView):
 
                     return_message = 'Alert was updated.'
                 else:
-                    # Delete Alert
+                    # Delete Alert if no events are selected
                     alert_obj.delete()
                     return_message = 'Alert was deleted.'
 

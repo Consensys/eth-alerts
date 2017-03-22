@@ -40,5 +40,38 @@
         {% else %}
             <p>There are no alerts for this DAPP.</p>
         {% endif %}
+
+        {% if contract_errors and contract_errors|length > 0 %}
+            <ul>
+                {% for error in contract_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form role="form" action="" method="post">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td>Contract address</td>
+                    <td>
+                        <input type="text" name="contract" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>ABI</td>
+                    <td>
+                        <textarea name="abi"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" value="Create" />
+                    </td>
+                </tr>
+            </table>
+            <input type="hidden" name="operation_type" value="ADD_CONTRACT" />
+        </form>
+
     {% endif %}
 {% endblock %}
