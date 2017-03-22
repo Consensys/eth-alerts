@@ -1,6 +1,6 @@
 import factory
 from faker import Factory as FakerFactory
-from dapp.events.factories import UserFactory
+from alerts.events.factories import UserFactory
 from api.constants import AUTH_CODE_HEADER
 
 faker = FakerFactory.create()

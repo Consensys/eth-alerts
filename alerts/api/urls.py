@@ -8,6 +8,5 @@ urlpatterns = [
     url(r'^alert/$', views.AlertView.as_view(), name='alert'),
     url(r'^alert/$', views.AlertView.as_view(), name='alert-delete'),
     url(r'^alert/signup/$', views.SignupView.as_view(), name='signup'),
-    url(r'^alert/admin/$', views.AdminView.as_view(), name='admin')
-
+    url(r'^alert/manage/$', views.AdminView.as_view(), name='admin')
 ]

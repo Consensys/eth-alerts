@@ -1,4 +1,3 @@
-from corsheaders.defaults import default_headers
 import environ
 import sys
 
@@ -39,6 +38,7 @@ THIRD_PARTY_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'events',
+    'contracts',
     'api',
     'eth',
 )
@@ -55,7 +55,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    #'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    #'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 )
 
 # DEBUG
@@ -96,29 +98,6 @@ CACHES = {
     'default': env.cache(default='locmemcache://')
 }
 
-# STATIC FILE CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(ROOT_DIR.path('staticfiles'))
-
-STATIC_URL = '/static/'
-
-# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = (
-    str(DJANGO_DIR.path('static')),
-)
-
-# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-)
-
-# MEDIA CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = str(ROOT_DIR.path('media'))
-MEDIA_URL = '/media/'
 
 # GENERAL CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -175,6 +154,9 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
+                # Your stuff: custom template context processors go here
+                'social.apps.django_app.context_processors.backends',
+                'social.apps.django_app.context_processors.login_redirect',
             ],
         },
     },
@@ -238,6 +220,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         "django.contrib.auth.models.AnonymousUser",
+        #'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        #'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
     'COERCE_DECIMAL_TO_STRING': False,
 }
@@ -245,9 +229,6 @@ REST_FRAMEWORK = {
 # DJANGO CORS HEADERS CONFIGURATION
 # ------------------------------------------------------------------------------
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_HEADERS = default_headers + (
-    'auth-code',
-)
 CORS_URLS_REGEX = r'^/(api|dapp)/.*$'
 
 # DJANGO REST SWAGGER SETTINGS
@@ -271,24 +252,5 @@ SWAGGER_SETTINGS = {
 
 # DJANGO SOLO CONFIGURATION
 # ------------------------------------------------------------------------------
-# SOLO_CACHE = 'default'
-# SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day
-
-
-# ETHEREUM NODE CONFIGURATION
-# ------------------------------------------------------------------------------
-ETHEREUM_NODE_PORT = env('ETHEREUM_NODE_PORT', default=8545)
-ETHEREUM_NODE_HOST = env('ETHEREUM_NODE_HOST', default='localhost')
-ETHEREUM_NODE_SSL = env('ETHEREUM_NODE_SSL', default=False)
-
-# CELERY CONFIGURATION
-# ------------------------------------------------------------------------------
-INSTALLED_APPS += ('taskapp.celery.CeleryConfig',)
-INSTALLED_APPS += ('kombu.transport.django',)
-INSTALLED_APPS += ('djcelery',)
-BROKER_URL = env("CELERY_BROKER_URL", default='django://')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_IGNORE_RESULT = True
-CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
+SOLO_CACHE = 'default'
+SOLO_CACHE_TIMEOUT = 60*60*24  # 1 day

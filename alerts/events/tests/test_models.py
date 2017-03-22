@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from events.models import (User, DApp, EventValue, Event, Alert)
-from dapp.events.factories import (DAppFactory, UserFactory, EventFactory, EventValueFactory, AlertFactory)
+from alerts.events.factories import (DAppFactory, UserFactory, EventFactory, EventValueFactory, AlertFactory)
 from django.db import IntegrityError
 import random
 import hashlib
