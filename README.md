@@ -85,10 +85,10 @@ RUNNING CELERY
 In order to execute the Celery worker and scheduler, which take care of sending email notifications to users, we have to ssh into two separate terminals and type the following:
     
     $ cd /vagrant/
-    $ celery -A taskapp.celery beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD/dapp"
+    $ celery -A taskapp.celery beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD/alerts"
     
     $ cd /vagrant/
-    $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/dapp" -c 1
+    $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/alerts" -c 1
     
 Now we have to declare the 'periodic tasks' executed by Celery. To achieve this we need to create a Django superuser and access the Admin web page. Once there, we can click on DJCELERY and then on Periodic tasks.
 
