@@ -4,11 +4,11 @@ API for subscribing an email account for contract events
 Settings
 --------
 
-For configuration purposes, the following table maps the 'dapp' environment variables to their Django setting:
+For configuration purposes, the following table maps the 'alerts' environment variables to their Django setting:
 
 | Environment Variable | Django Setting | Development Default | Production Default|
 |----------------------|----------------|---------------------|-------------------|
-|DJANGO_SETTINGS_MODULE| none | dapp.settings.local|dapp.settings.production|
+|DJANGO_SETTINGS_MODULE| none | alerts.settings.local|alerts.settings.production|
 |EMAIL_HOST | EMAIL_HOST | none | smtp.gmail.com|
 |EMAIL_HOST_PASSWORD | EMAIL_HOST_PASSWORD | none | *** |
 |EMAIL_HOST_USER | EMAIL_HOST_USER | none | noreply@gnosis.pm|
@@ -43,11 +43,11 @@ You are all set. The provision script will take care of:
 
 
 It will forward the port 8050.
-To run the Django Server, please SSH into the running vagrant box, then move to /vagrant/dapp/ folder and execute the python manage.py script:
+To run the Django Server, please SSH into the running vagrant box, then move to /vagrant/alerts/ folder and execute the python manage.py script:
 
 
     $ vagrant ssh
-    $ cd /vagrant/dapp
+    $ cd /vagrant/alerts
     $ python manage.py runserver
     
     
@@ -85,10 +85,10 @@ RUNNING CELERY
 In order to execute the Celery worker and scheduler, which take care of sending email notifications to users, we have to ssh into two separate terminals and type the following:
     
     $ cd /vagrant/
-    $ celery -A taskapp.celery beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD/dapp"
+    $ celery -A taskapp.celery beat -S djcelery.schedulers.DatabaseScheduler --loglevel debug --workdir="$PWD/alerts"
     
     $ cd /vagrant/
-    $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/dapp" -c 1
+    $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/alerts" -c 1
     
 Now we have to declare the 'periodic tasks' executed by Celery. To achieve this we need to create a Django superuser and access the Admin web page. Once there, we can click on DJCELERY and then on Periodic tasks.
 
