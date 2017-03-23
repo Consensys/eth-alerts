@@ -53,7 +53,7 @@ DATABASE_NAME="fs"
 CLUSTER_NAME="main"
 if ! su postgres -c "pg_lsclusters"| grep -q CLUSTER_NAME; then
     pg_createcluster --start --locale=en_US.UTF-8 9.3 CLUSTER_NAME
-vfi
+fi
 su postgres -c "psql -tAc \\\"CREATE USER ${DATABASE_NAME} WITH CREATEDB PASSWORD '123456';\\\""
 if ! su postgres -c "psql -l"|grep -q fs; then
     su postgres -c "createdb -T template1 -O ${DATABASE_NAME} ${DATABASE_NAME}"
@@ -61,7 +61,7 @@ fi
 SCRIPT
 
 $migrate = <<SCRIPT
-    cd /vagrant/dapp
+    cd /vagrant/alerts
     python manage.py migrate
 SCRIPT
 
