@@ -7,10 +7,10 @@ Settings
 For configuration purposes, the following table maps the 'alerts' environment variables to their Django setting:
 
 | Environment Variable | Django Setting | Development Default | Production Default| Description |
-|----------------------|----------------|---------------------|-------------------||
+|----------------------|----------------|---------------------|-------------------|-------------|
 |DJANGO_SETTINGS_MODULE| none | alerts.settings.local|alerts.settings.production||
 |EMAIL_HOST | EMAIL_HOST | none | smtp.gmail.com||
-|EMAIL_HOST_PASSWORD | EMAIL_HOST_PASSWORD | none | *** |For Gmail accounts or 2FA accounts remember to generate an app specific password|
+|EMAIL_HOST_PASSWORD | EMAIL_HOST_PASSWORD | none | **** |For Gmail accounts or 2FA accounts remember to generate an app specific password|
 |EMAIL_HOST_USER | EMAIL_HOST_USER | none | noreply@gnosis.pm||
 |EMAIL_PORT | EMAIL_PORT | 2525 | 587||
 |EMAIL_SUBJECT_PREFIX | EMAIL_SUBJECT_PREFIX | none | '[gnosis alerts]' ||
