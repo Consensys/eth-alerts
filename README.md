@@ -22,13 +22,15 @@ For configuration purposes, the following table maps the 'alerts' environment va
 |ETHEREUM_NODE_HOST | ETHEREUM_NODE_HOST | localhost | localhost |
 |ETHEREUM_NODE_PORT |ETHEREUM_NODE_PORT | 8545 | 8545|
 |ETHEREUM_NODE_SSL| ETHEREUM_NODE_SSL| False | False |
+|SERVER_HOST| none | http://localhost:8080 | alerts.gnosis.pm |
 
 Getting up and running
 ----------------------
 
-To get the development environment running, all you need to have is vagrant/virtualbox combo.
-Get into the root folder, run a:
+To get the development environment running, all you need is the vagrant/virtualbox combo.
+Get into the root folder, run :
 
+    $ cd PATH/TO/PROJECT/ROOT
     $ vagrant up
     
     
@@ -90,7 +92,7 @@ In order to execute the Celery worker and scheduler, which take care of sending 
     $ cd /vagrant/
     $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/alerts" -c 1
     
-Now we have to declare the 'periodic tasks' executed by Celery. To achieve this we need to create a Django superuser and access the Admin web page. Once there, we can click on DJCELERY and then on Periodic tasks.
+Now declare the 'periodic tasks' executed by Celery. To achieve this please create a Django superuser and access the Admin web page. Once there, click on DJCELERY and then on Periodic tasks.
 
 Create a new object and provide the following values:
 
@@ -99,3 +101,4 @@ Create a new object and provide the following values:
 * Enabled: checked
 * Interval: 10 seconds
 
+You are done, Celery will query the Django Database and execute the task.
