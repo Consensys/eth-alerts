@@ -2,6 +2,13 @@
 # and redirect http to https
 
 server {
+  listen      [::]:$NGINX_PORT;
+  listen      $NGINX_PORT;
+  server_name $SSL_SERVER_NAME;
+  return 301 https://$APP:443$request_uri;
+}
+
+server {
   listen      [::]:$NGINX_SSL_PORT ssl spdy;
   listen      $NGINX_SSL_PORT ssl spdy;
   server_name $SSL_SERVER_NAME;
@@ -44,6 +51,5 @@ server {
 
   ssl_certificate /etc/letsencrypt/live/testalerts.gnosis.pm/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/testalerts.gnosis.pm/privkey.pem;
-  include $DOKKU_ROOT/$APP/nginx.conf.d/*.conf;
 
 }
