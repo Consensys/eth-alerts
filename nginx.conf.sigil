@@ -2,22 +2,22 @@
 # and redirect http to https
 
 server {
-  listen      [::]:$NGINX_PORT;
-  listen      $NGINX_PORT;
-  server_name $SSL_SERVER_NAME;
-  return 301 https://$APP:443$request_uri;
+  listen      [::]:{{ .NGINX_PORT }};
+  listen      {{ .NGINX_PORT }};
+  server_name {{ .SSL_SERVER_NAME }};
+  return 301 https://{{ .APP }}:443$request_uri;
 }
 
 server {
-  listen      [::]:$NGINX_SSL_PORT ssl spdy;
-  listen      $NGINX_SSL_PORT ssl spdy;
-  server_name $SSL_SERVER_NAME;
-  access_log  /var/log/nginx/${APP}-access.log;
-  error_log   /var/log/nginx/${APP}-error.log;
+  listen      [::]:{{ .NGINX_SSL_PORT }} ssl spdy;
+  listen      {{ .NGINX_SSL_PORT }} ssl spdy;
+  server_name {{ .SSL_SERVER_NAME }};
+  access_log  /var/log/nginx/{{ .APP }}-access.log;
+  error_log   /var/log/nginx/{{ .APP }}-error.log;
   $SSL_DIRECTIVES
 
   keepalive_timeout   70;
-  add_header          Alternate-Protocol  $NGINX_SSL_PORT:npn-spdy/2;
+  add_header          Alternate-Protocol  {{ .NGINX_SSL_PORT }}:npn-spdy/2;
 
   location /admin {
     gzip on;
@@ -27,7 +27,7 @@ server {
     gzip_vary on;
     gzip_comp_level  6;
 
-    proxy_pass  http://$APP;
+    proxy_pass  http://{{ .APP }};
     proxy_http_version 1.1;
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection "upgrade";
