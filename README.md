@@ -6,29 +6,31 @@ Settings
 
 For configuration purposes, the following table maps the 'alerts' environment variables to their Django setting:
 
-| Environment Variable | Django Setting | Development Default | Production Default|
-|----------------------|----------------|---------------------|-------------------|
-|DJANGO_SETTINGS_MODULE| none | alerts.settings.local|alerts.settings.production|
-|EMAIL_HOST | EMAIL_HOST | none | smtp.gmail.com|
-|EMAIL_HOST_PASSWORD | EMAIL_HOST_PASSWORD | none | *** |
-|EMAIL_HOST_USER | EMAIL_HOST_USER | none | noreply@gnosis.pm|
-|EMAIL_PORT | EMAIL_PORT | 2525 | 587|
-|EMAIL_SUBJECT_PREFIX | EMAIL_SUBJECT_PREFIX | none | '[gnosis alerts]' |
-|EMAIL_USE_TLS| none | none | True |
-|DEFAULT_FROM_EMAIL| DEFAULT_FROM_EMAIL | none |'gnosispm <noreply@gnosis.pm>' |
-|EMAIL_BACKEND | none | 'django.core.mail.backends.filebased.EmailBackend'| 'email_log.backends.EmailBackend'|
-|EMAIL_LOG_BACKEND | none | 'django.core.mail.backends.smtp.EmailBackend'| 'django.core.mail.backends.smtp.EmailBackend'|
-|EMAIL_FILE_PATH | none | '/tmp/app-messages' | none |
-|ETHEREUM_NODE_HOST | ETHEREUM_NODE_HOST | localhost | localhost |
-|ETHEREUM_NODE_PORT |ETHEREUM_NODE_PORT | 8545 | 8545|
-|ETHEREUM_NODE_SSL| ETHEREUM_NODE_SSL| False | False |
+| Environment Variable | Django Setting | Development Default | Production Default| Description |
+|----------------------|----------------|---------------------|-------------------|-------------|
+|DJANGO_SETTINGS_MODULE| none | alerts.settings.local|alerts.settings.production||
+|EMAIL_HOST | EMAIL_HOST | none | smtp.gmail.com||
+|EMAIL_HOST_PASSWORD | EMAIL_HOST_PASSWORD | none | **** |For Gmail accounts or 2FA accounts remember to generate an app specific password|
+|EMAIL_HOST_USER | EMAIL_HOST_USER | none | noreply@gnosis.pm||
+|EMAIL_PORT | EMAIL_PORT | 2525 | 587||
+|EMAIL_SUBJECT_PREFIX | EMAIL_SUBJECT_PREFIX | none | '[gnosis alerts]' ||
+|EMAIL_USE_TLS| none | none | True ||
+|DEFAULT_FROM_EMAIL| DEFAULT_FROM_EMAIL | none |'gnosispm <noreply@gnosis.pm>' ||
+|EMAIL_BACKEND | none | 'django.core.mail.backends.filebased.EmailBackend'| 'email_log.backends.EmailBackend'||
+|EMAIL_LOG_BACKEND | none | 'django.core.mail.backends.smtp.EmailBackend'| 'django.core.mail.backends.smtp.EmailBackend'||
+|EMAIL_FILE_PATH | none | '/tmp/app-messages' | none |Directory containing the emails sent when EMAIL_BACKEND is a file|
+|ETHEREUM_NODE_HOST | ETHEREUM_NODE_HOST | localhost | localhost ||
+|ETHEREUM_NODE_PORT |ETHEREUM_NODE_PORT | 8545 | 8545||
+|ETHEREUM_NODE_SSL| ETHEREUM_NODE_SSL| False | False ||
+|SERVER_HOST| SERVER_HOST | http://localhost:8080 | alerts.gnosis.pm |Used in eth/mail_batch.py|
 
 Getting up and running
 ----------------------
 
-To get the development environment running, all you need to have is vagrant/virtualbox combo.
-Get into the root folder, run a:
+To get the development environment running, all you need is the vagrant/virtualbox combo.
+Get into the root folder, run :
 
+    $ cd PATH/TO/PROJECT/ROOT
     $ vagrant up
     
     
@@ -90,7 +92,7 @@ In order to execute the Celery worker and scheduler, which take care of sending 
     $ cd /vagrant/
     $ celery -A taskapp.celery worker --loglevel debug --workdir="$PWD/alerts" -c 1
     
-Now we have to declare the 'periodic tasks' executed by Celery. To achieve this we need to create a Django superuser and access the Admin web page. Once there, we can click on DJCELERY and then on Periodic tasks.
+Now declare the 'periodic tasks' executed by Celery. To achieve this please create a Django superuser and access the Admin web page. Once there, click on DJCELERY and then on Periodic tasks.
 
 Create a new object and provide the following values:
 
@@ -99,3 +101,4 @@ Create a new object and provide the following values:
 * Enabled: checked
 * Interval: 10 seconds
 
+You are done, Celery will query the Django Database and execute the task.
