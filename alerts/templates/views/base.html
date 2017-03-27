@@ -5,6 +5,11 @@
     {% block title %}
         <title>Gnosis Alerts Admin</title>
     {% endblock %}
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/gnosis-bootstrap.css'  %}">
+    <link rel="stylesheet" href="{% static 'css/style.css'  %}">
+
 </head>
 <body>
 {% block body %}
@@ -12,6 +17,10 @@
         {% block container %}{% endblock %}
     </div>
 {% endblock %}
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="{% static 'libs/jquery-3.2.0.min.js' %}"></script>
+<script src="{% static 'libs/bootstrap/js/bootstrap.min.js' %}"></script>
 
 </body>
 </html>
