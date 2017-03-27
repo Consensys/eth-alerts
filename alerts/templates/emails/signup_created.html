@@ -5,12 +5,13 @@
 {% endblock %}
 
 {% block body %}
-
-Signup succeeded.
-    {% if callback %}
-        Please continue by clicking on the following url: <a href='{{ callback }}'>Open</a>.
-    {% else %}
-        Your authentication code is: {{ authentication_code }}.
-    {% endif %}
+    {% block html %}
+        Signup succeeded.
+        {% if callback %}
+            Please continue by clicking on the following url: <a href='{{ callback }}'>Open</a>.
+        {% else %}
+            Your authentication code is: {{ authentication_code }}.
+        {% endif %}
+    {% endblock %}
 
 {% endblock %}

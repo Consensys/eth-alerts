@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block body %}
-
-Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
-
+    {% block html %}
+    Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
+    {% endblock %}
 {% endblock %}
