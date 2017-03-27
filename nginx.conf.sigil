@@ -47,6 +47,7 @@ server {
     # include proxy_params;
   }
 
+
   location /api {
     gzip on;
     gzip_min_length  1100;
