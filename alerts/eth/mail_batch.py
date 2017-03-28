@@ -34,7 +34,7 @@ class MailBatch(Singleton):
 
             for mail, dapp_logs in user_emails.iteritems():
                 # TODO support batch mail, reuse connection
-                send_email('emails/alerts.html', {'dapps': dapp_logs, 'unsubscribe_url': complete_url}, mail)
+                send_email('emails/alerts.html', {'etherscan_url': settings.ETHERSCAN_URL, 'dapps': dapp_logs, 'unsubscribe_url': complete_url}, mail)
                 del user_emails[mail]
         except Exception:
             for mail, dapp_logs in user_emails.iteritems():
