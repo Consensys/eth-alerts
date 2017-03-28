@@ -73,9 +73,21 @@ server {
     # proxy_request_buffering off;
     # proxy_redirect off;
     # include proxy_params;
-
-
   }
+
+  location /static {
+    gzip on;
+    gzip_min_length  1100;
+    gzip_buffers  4 32k;
+    gzip_types    text/css text/javascript text/xml text/plain text/x-component application/javascript application/x-javascript application/json appl$
+    gzip_vary on;
+    gzip_comp_level  6;
+
+    {{ range .DOKKU_APP_LISTENERS | split " " }}
+      proxy_pass http://{{ . }};
+    {{ end }}
+  }
+
 
   location / {
      proxy_pass https://eth-alerts-docs.readthedocs.io:443;
