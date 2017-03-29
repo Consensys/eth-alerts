@@ -37,9 +37,9 @@ class Bot(Singleton):
         current = self.web3.eth.blockNumber
         if daemon.block_number < current:
             blocks_to_update = range(daemon.block_number+1, current+1)
+            logger.info("block range {}-{} {}".format(daemon.block_number, current, blocks_to_update))
             daemon.block_number = current
             daemon.save()
-            logger.info("block range {}", blocks_to_update)
             return blocks_to_update
         else:
             return []
@@ -108,7 +108,6 @@ class Bot(Singleton):
 
         # update block number
         # get blocks and decode logs
-        logger.info("Get logs from blocks")
         for block in self.update_block():
             logger.info("block {}".format(block))
             # first get un-decoded logs
