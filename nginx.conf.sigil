@@ -9,8 +9,8 @@ server {
 }
 
 server {
-  listen      [::]:{{ .NGINX_SSL_PORT }} ssl spdy;
-  listen      {{ .NGINX_SSL_PORT }} ssl spdy;
+  listen      [::]:{{ .NGINX_SSL_PORT }} ssl http2;
+  listen      {{ .NGINX_SSL_PORT }} ssl http2;
   server_name {{ .SSL_SERVER_NAME }};
   access_log  /var/log/nginx/{{ .APP }}-access.log;
   error_log   /var/log/nginx/{{ .APP }}-error.log debug;
