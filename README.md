@@ -22,6 +22,7 @@ For configuration purposes, the following table maps the 'alerts' environment va
 |ETHEREUM_NODE_HOST | ETHEREUM_NODE_HOST | localhost | localhost ||
 |ETHEREUM_NODE_PORT |ETHEREUM_NODE_PORT | 8545 | 8545||
 |ETHEREUM_NODE_SSL| ETHEREUM_NODE_SSL| False | False ||
+|ETHERSCAN_URL| ETHERSCAN_URL| 'https://testnet.etherscan.io' | 'https://etherscan.io/' ||
 |SERVER_HOST| SERVER_HOST | http://localhost:8080 | alerts.gnosis.pm |Used in eth/mail_batch.py|
 
 Getting up and running
