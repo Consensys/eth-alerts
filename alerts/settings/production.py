@@ -9,8 +9,11 @@ ALLOWED_HOSTS = [".gnosis.pm"]
 
 INSTALLED_APPS += ("gunicorn", )
 
+SERVER_HOST = env('SERVER_HOST', default='https://alerts.gnosis.pm')
+
 if DEBUG is False:
     STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+    MIDDLEWARE_CLASSES += ('whitenoise.middleware.WhiteNoiseMiddleware', )
 
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------

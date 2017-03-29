@@ -281,6 +281,8 @@ ETHEREUM_NODE_PORT = env('ETHEREUM_NODE_PORT', default=8545)
 ETHEREUM_NODE_HOST = env('ETHEREUM_NODE_HOST', default='localhost')
 ETHEREUM_NODE_SSL = env('ETHEREUM_NODE_SSL', default=False)
 
+ETHERSCAN_URL = env('ETHERSCAN_URL', default='https://testnet.etherscan.io')
+
 # CELERY CONFIGURATION
 # ------------------------------------------------------------------------------
 INSTALLED_APPS += ('taskapp.celery.CeleryConfig',)

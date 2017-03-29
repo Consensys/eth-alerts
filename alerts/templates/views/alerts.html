@@ -2,38 +2,45 @@
 {% block container %}
 
     {% if message %}
-        {{ message }}
+        <div class="alert alert-success alert-dismissable">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{ message }}
+        </div>
     {% endif %}
 
     {% if dapp %}
-        <form role="form" action="" method="post">
+        <form role="form" action="" method="post" class="top-20" id="deleteDAppForm">
             {% csrf_token %}
-            <p>
+            <div class="form-group">
                 <b>DAPP</b>: {{ dapp.name }}
-                <input type="hidden" name="operation_type" value="DELETE" />
-                <input type="submit" value="Delete DApp" />
-            </p>
+                <input type="button" value="Delete DApp" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteDAppModal" />
+            </div>
+            <input type="hidden" name="operation_type" value="DELETE" />
         </form>
         {% if alerts %}
             {% for alert in alerts %}
-                <div>
-                    <p>Contract: {{ alert.contract }}</p>
+                <div class="row top-20">
+                    <div class="col-md-8">Contract: {{ alert.contract }}</div>
                 </div>
 
-                <form role="form" action="" method="post">
+                <form role="form" action="" method="post" class="update-alert">
 
                 {% csrf_token %}
 
                 {% for abi in alert.abi %}
+                    <div class = "checkbox">
+                        <label>
                     {% if abi.name in alert.selected_events %}
                         <input type="checkbox" name="{{ abi.name }}" checked />{{ abi.name }}<br/>
                     {% else %}
                         <input type="checkbox" name="{{ abi.name }}"/>{{ abi.name }}<br/>
                     {% endif %}
+                        </label>
+                    </div>
                 {% endfor %}
 
                 <input type="hidden" name="contract" value="{{ alert.contract }}" />
-                <input type="submit" value="Save" />
+                <input type="button" class="btn btn-success btn-sm update-alert-btn" value="Save" />
 
                 </form>
             {% endfor %}
@@ -41,37 +48,105 @@
             <p>There are no alerts for this DAPP.</p>
         {% endif %}
 
-        {% if contract_errors and contract_errors|length > 0 %}
-            <ul>
-                {% for error in contract_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        <form role="form" action="" method="post">
+        <form role="form" action="" method="post" class="top-50">
             {% csrf_token %}
-            <table>
-                <tr>
-                    <td>Contract address</td>
-                    <td>
-                        <input type="text" name="contract" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>ABI</td>
-                    <td>
-                        <textarea name="abi"></textarea>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <input type="submit" value="Create" />
-                    </td>
-                </tr>
-            </table>
+
+            <h3>Deploy a new contract and create a new alert</h3>
+
+            {% if contract_errors and contract_errors|length > 0 %}
+                {% for error in contract_errors %}
+                    <div class="alert alert-danger alert-dismissable">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group">
+                <label for="exampleInputEmail1">Contract address</label>
+                <input type="text" name="contract" placeholder="0x..." class="form-control" value="{{ contract }}"/>
+            </div>
+
+            <div class="form-group">
+                <label for="exampleInputEmail1">ABI</label>
+                <textarea name="abi" class="form-control">{{ abi }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-success" />
+            </div>
+
             <input type="hidden" name="operation_type" value="ADD_CONTRACT" />
         </form>
 
     {% endif %}
+
+    <div class="modal fade" id="deleteDAppModal" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Delete DApp</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="submitDeleteDApp">Yes</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" id="deleteAlertModal" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Alert deletion</h4>
+                </div>
+                <div class="modal-body">
+                    <p>The alert is going to be deleted, do you want to proceed?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="submitDeleteAlert">Yes</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+<script>
+$(document).ready(function () {
+    $('#submitDeleteDApp').click(function () {
+        $("#deleteDAppForm").submit();
+    });
+
+    $('.update-alert-btn').click(function () {
+        var form = $(this).parent();
+        var count = 0;
+        for (item in form[0].children) {
+            if ($(form[0][item]).attr('type') == 'checkbox' && $($(form[0][item])[0]).is(':checked')) {
+                count++;
+            }
+        }
+
+        if (count>0) {
+            form.submit();
+        }
+        else {
+            $('#deleteAlertModal').modal('toggle');
+        }
+
+        $('#submitDeleteAlert').click(function () {
+            form.submit();
+        });
+
+    });
+
+});
+</script>
+
+
 {% endblock %}

@@ -1,11 +1,11 @@
 {% extends "mail_templated/base.tpl" %}
 
 {% block subject %}
-[{{site.name}}] Alert Deleted
+Gnosis Alerts - DApp Deleted
 {% endblock %}
 
 {% block body %}
-
-Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
-
+    {% block html %}
+    Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
+    {% endblock %}
 {% endblock %}

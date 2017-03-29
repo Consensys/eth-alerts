@@ -152,6 +152,9 @@ class AdminView(TemplateView, RedirectView):
                             kwargs['contract_errors'].append("Please provide a valid ABI string")
                 except ValueError:
                     kwargs['contract_errors'].append("Please provide a valid ABI string")
+                finally:
+                    kwargs['contract'] = contract
+                    kwargs['abi'] = abi
             else:
                 try:
                     alert_obj = Alert.objects.get(
