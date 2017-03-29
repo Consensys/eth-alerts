@@ -28,6 +28,8 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_BACKEND = 'email_log.backends.EmailBackend'
 EMAIL_LOG_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+ETHERSCAN_URL = env('ETHERSCAN_URL', default='https://etherscan.io')
+
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------
 TEMPLATES[0]['OPTIONS']['loaders'] = [
