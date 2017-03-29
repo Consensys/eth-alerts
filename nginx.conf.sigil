@@ -11,18 +11,18 @@ server {
 server {
   listen      [::]:{{ .NGINX_SSL_PORT }} ssl http2;
   listen      {{ .NGINX_SSL_PORT }} ssl http2;
-  server_name {{ .SSL_SERVER_NAME }};
+  server_name {{ .NOSSL_SERVER_NAME }}; # TO BE FIXED
   access_log  /var/log/nginx/{{ .APP }}-access.log;
   error_log   /var/log/nginx/{{ .APP }}-error.log debug;
 
   keepalive_timeout   70;
   add_header          Alternate-Protocol  {{ .NGINX_SSL_PORT }}:npn-spdy/2;
 
-  ssl_certificate /etc/letsencrypt/live/alerts.gnosis.pm/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/alerts.gnosis.pm/privkey.pem;
+  # ssl_certificate /etc/letsencrypt/live/alerts.gnosis.pm/fullchain.pem;
+  # ssl_certificate_key /etc/letsencrypt/live/alerts.gnosis.pm/privkey.pem;
 
-  # ssl_certificate     {{ .APP_SSL_PATH }}/server.crt;
-  # ssl_certificate_key {{ .APP_SSL_PATH }}/server.key;
+  ssl_certificate     {{ .APP_SSL_PATH }}/server.crt;
+  ssl_certificate_key {{ .APP_SSL_PATH }}/server.key;
 
   location /admin {
     gzip on;
