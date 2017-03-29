@@ -18,8 +18,8 @@ server {
   keepalive_timeout   70;
   add_header          Alternate-Protocol  {{ .NGINX_SSL_PORT }}:npn-spdy/2;
 
-  # ssl_certificate /etc/letsencrypt/live/testalerts.gnosis.pm/fullchain.pem;
-  # ssl_certificate_key /etc/letsencrypt/live/testalerts.gnosis.pm/privkey.pem;
+  # ssl_certificate /etc/letsencrypt/live/alerts.gnosis.pm/fullchain.pem;
+  # ssl_certificate_key /etc/letsencrypt/live/alerts.gnosis.pm/privkey.pem;
 
   ssl_certificate     {{ .APP_SSL_PATH }}/server.crt;
   ssl_certificate_key {{ .APP_SSL_PATH }}/server.key;
