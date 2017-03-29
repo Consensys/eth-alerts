@@ -39,6 +39,7 @@ class Bot(Singleton):
             blocks_to_update = range(daemon.block_number+1, current+1)
             daemon.block_number = current
             daemon.save()
+            logger.info("block range {}", blocks_to_update)
             return blocks_to_update
         else:
             return []
