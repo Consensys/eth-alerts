@@ -8,7 +8,7 @@
     {% block html %}
         <p>We have detected a few transaction events you were subscribed to.</p>
         {% for dapp, dapp_logs in dapps.items %}
-            <p></p>Dapp <b>{{dapp}}</b> had {{dapp_logs|length}} events:</p>
+            <p></p>Dapp <b>{{dapp}}</b> had {{dapp_logs.logs|length}} events:</p>
             <ul style="margin-top: 10px;">
             {% for log in dapp_logs.logs %}
                 <li style="margin-bottom: 10px;">

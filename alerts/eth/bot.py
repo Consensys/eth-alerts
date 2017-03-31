@@ -6,6 +6,9 @@ from json import loads
 from web3 import Web3, HTTPProvider, RPCProvider
 from django.conf import settings
 from eth.mail_batch import MailBatch
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class UnknownBlock(Exception):
@@ -34,6 +37,7 @@ class Bot(Singleton):
         current = self.web3.eth.blockNumber
         if daemon.block_number < current:
             blocks_to_update = range(daemon.block_number+1, current+1)
+            logger.info("block range {}-{} {}".format(daemon.block_number, current, blocks_to_update))
             daemon.block_number = current
             daemon.save()
             return blocks_to_update
@@ -105,6 +109,7 @@ class Bot(Singleton):
         # update block number
         # get blocks and decode logs
         for block in self.update_block():
+            logger.info("block {}".format(block))
             # first get un-decoded logs
             logs = self.get_logs(block)
             # get contract addresses
