@@ -50,6 +50,7 @@ class SignupAPISerializer(serializers.Serializer):
             user_obj.__dict__['callback'] = None
 
         user_obj.__dict__['authentication_code'] = dapp_obj.authentication_code
+        user_obj.__dict__['dapp_name'] = dapp_obj.name
         return user_obj
 
     def to_representation(self, instance):
