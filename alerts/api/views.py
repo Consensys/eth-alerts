@@ -27,7 +27,11 @@ class SignupView(CreateAPIView):
         # Send email
         email_to = serializer.instance.email
         send_email('emails/signup_created.html',
-                   {'callback': serializer.instance.callback, 'authentication_code': serializer.instance.authentication_code},
+                   {
+                       'callback': serializer.instance.callback,
+                       'authentication_code': serializer.instance.authentication_code,
+                       'dapp_name' : serializer.instance.dapp_name
+                   },
                    email_to)
 
 
