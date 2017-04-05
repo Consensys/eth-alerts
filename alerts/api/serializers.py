@@ -22,7 +22,7 @@ import json
 class SignupAPISerializer(serializers.Serializer):
 
     email = serializers.EmailField()
-    callback = serializers.CharField(required=False, allow_blank=True)
+    callback = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     name = serializers.CharField() # dapp name
 
     def create(self, validated_data):
