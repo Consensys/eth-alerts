@@ -102,10 +102,6 @@ class Bot(Singleton):
                             # filtered[email][dapp_name] = []
                             filtered[email][dapp_name] = dict(authentication_code=dapp_code, logs=[])
 
-                        print "## PRE ##\n"
-                        print log
-                        print "## POST ##\n"
-
                         for param in log.get('params'):
                             if param.get('name') == 'sender' or param.get('name') == 'owner':
                                 param.update({'value': '0x' + param.get('value')[26:66]})
@@ -120,10 +116,6 @@ class Bot(Singleton):
                             elif isinstance(param.get('value'), long):
                                 # param.get('name') in to_int_from_long_events:
                                 param.update({'value': param.get('value')/10**18.0})
-
-                            print param
-
-                        print log
 
                         # filtered[email][dapp_name].append(log)
                         filtered[email][dapp_name].get('logs').append(log)

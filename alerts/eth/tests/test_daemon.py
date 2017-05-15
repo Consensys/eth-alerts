@@ -344,7 +344,8 @@ class TestDaemon(TestCase):
         filtered = self.bot.filter_logs(logs, contracts)
         self.assertEqual(1, len(filtered))
         self.assertEqual(1, len(filtered[alert.dapp.user.email]))
-        self.assertEqual(2, len(filtered[alert.dapp.user.email][alert.dapp.name]['logs']))
+        self.assertEqual(1, len(filtered[alert.dapp.user.email][alert.dapp.name]['logs']))
+        self.assertEqual('0xA0dbdaDcbCC540be9bF4e9A812035EB1289DaD73', filtered[alert.dapp.user.email][alert.dapp.name]['logs'][0]['address'])
 
     def test_run_cycle(self):
         tx_hash = self.bot.web3.eth.contract(abi, bytecode=bin_hex).deploy()
