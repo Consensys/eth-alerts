@@ -6,31 +6,36 @@
 
 {% block body %}
     {% block html %}
-        <p>We have detected a few transaction events you were subscribed to.</p>
-        {% for dapp, dapp_logs in dapps.items %}
-            <p></p>Dapp <b>{{dapp}}</b> had {{dapp_logs.logs|length}} events:</p>
-            <ul style="margin-top: 10px;">
-            {% for log in dapp_logs.logs %}
-                <li style="margin-bottom: 10px;">
-                    Event {{ log.name }} triggered by contract <a href="{{ etherscan_url }}/address/{{ log.address }}" target="_blank">{{ log.address }}</a>
-                    <ul>
-                        {% for param in log.params %}
-                            <li>
-                                {{ param.name }} :
-                                {% if param.name == 'sender' %}
-                                    <a href="{{ etherscan_url }}/tx/{{ param.value }}" target="_blank">{{ param.value }}</a>
-                                {% else %}
-                                    {{ param.value }}
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endfor %}
-            </ul>
+        <style type="text/css">
+            @import url(https://fonts.googleapis.com/css?family=Montserrat);
+        </style>
+        <div style="font-family: 'Montserrat', sans-serif;">
+            <p>We have detected a few transaction events you were subscribed to.</p>
+            {% for dapp, dapp_logs in dapps.items %}
+                <p></p>Dapp <b>{{dapp}}</b> had {{dapp_logs.logs|length}} events:</p>
+                <ul style="margin-top: 10px;">
+                {% for log in dapp_logs.logs %}
+                    <li style="margin-bottom: 10px;">
+                        Event {{ log.name }} triggered by contract <a href="{{ etherscan_url }}/address/{{ log.address }}" target="_blank">{{ log.address }}</a>
+                        <ul>
+                            {% for param in log.params %}
+                                <li>
+                                    {{ param.name }} :
+                                    {% if param.etherscan_url %}
+                                        <a href="{{ param.etherscan_url }}" target="_blank">{{ param.value }}</a>
+                                    {% else %}
+                                        {{ param.value }}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+                </ul>
 
-            Click <a href='{{ unsubscribe_url }}{{ dapp_logs.authentication_code }}'>here to unsubscribe</a>.
-        {% endfor %}
+                Click <a href='{{ unsubscribe_url }}{{ dapp_logs.authentication_code }}'>here to unsubscribe</a>.
+            {% endfor %}
+        </div>
     {% endblock %}
 
 {% endblock %}

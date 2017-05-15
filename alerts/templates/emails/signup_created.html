@@ -1,23 +1,27 @@
 {% extends "mail_templated/base.tpl" %}
+{% load static from staticfiles %}
 
 {% block subject %}
-Gnosis Alerts - Signup
+    Gnosis Alerts - Signup
 {% endblock %}
 
 {% block body %}
     {% block html %}
-        <div style="font-family: Arial, Helvetica, sans-serif;">
-        Hi,<br/>
-        a signup request has been made for the DApp {{ dapp_name}}. If you requested this action, great, it was successful.
-        {% if callback %}
+        <style type="text/css">
+            @import url(https://fonts.googleapis.com/css?family=Montserrat);
+        </style>
+        <div style="font-family: 'Montserrat', sans-serif;">
+            Hi,<br/>
+            a signup request has been made for the DApp {{ dapp_name}}. If you requested this action, great, it was successful.
+            {% if callback %}
+                <br/><br/>
+                Please click on this link to complete the process: <a href='{{ callback }}'>{{ callback }}</a>.
+            {% else %}
+                <br/><br/>
+                Your authentication code is: {{ authentication_code }}.
+            {% endif %}
             <br/><br/>
-            Please click on this link to complete the process: <a href='{{ callback }}'>{{ callback }}</a>.
-        {% else %}
-            <br/><br/>
-            Your authentication code is: {{ authentication_code }}.
-        {% endif %}
-        <br/><br/>
-        Please ignore this email if you didn't request this action.
+            Please ignore this email if you didn't request this action.
         </div>
     {% endblock %}
 

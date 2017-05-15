@@ -1,4 +1,6 @@
 {% extends "mail_templated/base.tpl" %}
+{% load static from staticfiles %}
+<link rel="stylesheet" href="{% static 'css/email.css'  %}">
 
 {% block subject %}
 Gnosis Alerts - DApp Deleted
@@ -6,6 +8,11 @@ Gnosis Alerts - DApp Deleted
 
 {% block body %}
     {% block html %}
-    Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
+        <style type="text/css">
+            @import url(https://fonts.googleapis.com/css?family=Montserrat);
+        </style>
+        <div style="font-family: 'Montserrat', sans-serif;">
+            Your DApp {{dapp_name}} with authorization code {{auth_code}} was deleted.
+        </div>
     {% endblock %}
 {% endblock %}

@@ -12,7 +12,7 @@ def send_email(template_name, context, email_to):
     message.template_name = template_name
     message.context = context
     message.from_email = settings.SERVER_EMAIL
-    message.to= [email_to]
+    message.to = [email_to]
     message.send()
 
 
