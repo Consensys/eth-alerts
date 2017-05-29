@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.test import TestCase
-from eth.mail_batch import MailBatch
+from events.mail_batch import MailBatch
 from django.core import mail
 
 

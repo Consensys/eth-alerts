@@ -46,6 +46,7 @@ SCRIPT
 $requirements = <<SCRIPT
 pip install --upgrade pip
 pip install -r /vagrant/requirements/production.txt
+pip install --user /vagrant/dj-ether-logs-0.1.tar.gz
 SCRIPT
 
 $postgresql = <<SCRIPT

@@ -41,3 +41,12 @@ class MailBatch(Singleton):
                 if not self.users.get(mail):
                     self.users[mail] = {}
                 self.users[mail].update(dapp_logs)
+
+batch = MailBatch()
+
+def callback_per_block(filtered):
+    for mail, dapp_logs in filtered.iteritems():
+        batch.add_mail(mail, dapp_logs)
+
+def callback_per_exec():
+    batch.send_mail()

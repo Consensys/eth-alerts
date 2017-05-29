@@ -35,16 +35,18 @@ THIRD_PARTY_APPS = (
     'authtools',
     'solo',
 )
+FIRST_PARTY_APPS = (
+    'dj_ether_logs',
+)
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'events',
     'api',
-    'eth',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + FIRST_PARTY_APPS + LOCAL_APPS
 
 # MIDDLEWARE CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -282,6 +284,15 @@ ETHEREUM_NODE_HOST = env('ETHEREUM_NODE_HOST', default='localhost')
 ETHEREUM_NODE_SSL = env('ETHEREUM_NODE_SSL', default=False)
 
 ETHERSCAN_URL = env('ETHERSCAN_URL', default='https://testnet.etherscan.io')
+
+# DJANGO ETHEREUM WATCHER CONFIGURATION
+# ------------------------------------------------------------------------------
+#from events.models import Alert as DAppAlertModel
+ALERT_MODEL_APP = 'events'
+ALERT_MODEL = 'Alert'
+from events.mail_batch import callback_per_block, callback_per_exec
+CALLBACK_PER_BLOCK = callback_per_block
+CALLBACK_PER_EXEC = callback_per_exec
 
 # CELERY CONFIGURATION
 # ------------------------------------------------------------------------------
