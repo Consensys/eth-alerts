@@ -1,6 +1,7 @@
 from corsheaders.defaults import default_headers
 import environ
 import sys
+from events.mail_batch import callback_per_block, callback_per_exec, filter_logs
 
 ROOT_DIR = environ.Path(__file__) - 3  # (/a/b/myfile.py - 3 = /)
 DJANGO_DIR = ROOT_DIR.path('alerts')
@@ -36,7 +37,7 @@ THIRD_PARTY_APPS = (
     'solo',
 )
 FIRST_PARTY_APPS = (
-    'dj_ether_logs',
+    'django_ether_logs',
 )
 
 # Apps specific for this project go here.
@@ -290,9 +291,9 @@ ETHERSCAN_URL = env('ETHERSCAN_URL', default='https://testnet.etherscan.io')
 #from events.models import Alert as DAppAlertModel
 ALERT_MODEL_APP = 'events'
 ALERT_MODEL = 'Alert'
-from events.mail_batch import callback_per_block, callback_per_exec
 CALLBACK_PER_BLOCK = callback_per_block
 CALLBACK_PER_EXEC = callback_per_exec
+LOG_FILTER_FUNCTION = filter_logs
 
 # CELERY CONFIGURATION
 # ------------------------------------------------------------------------------

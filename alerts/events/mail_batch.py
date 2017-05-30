@@ -2,6 +2,7 @@ from utils import Singleton
 from api.utils import send_email
 from django.urls import reverse
 from django.conf import settings
+from django.apps import apps
 
 
 class MailBatch(Singleton):
@@ -50,3 +51,42 @@ def callback_per_block(filtered):
 
 def callback_per_exec():
     batch.send_mail()
+
+def filter_logs(logs, contracts):
+    Alert = apps.get_app_config('events').get_model('Alert')
+    # filter by contracts
+    all_alerts = Alert.objects.filter(contract__in=contracts).prefetch_related('events__event_values').prefetch_related('dapp')
+    filtered = {}
+    for log in logs:
+        # get alerts for same log contract (can be many)
+        alerts = all_alerts.filter(contract=log[u'address'])
+
+        for alert in alerts:
+            # Get event names
+            events = alert.events.filter(name=log[u'name'])
+            if events.count():
+                # Get event property, if event property, discard unmatched values
+                add_event = True
+                if events[0].event_values.count():
+                    # check that all parameters check in value or doesn't exist
+                    for event_value in events[0].event_values.iterator():
+                        for param in log[u'params']:
+                            if event_value.property == param[u'name']:
+                                if event_value.value != param[u'value']:
+                                    add_event = False
+
+                # add log
+                if add_event:
+                    email = alert.dapp.user.email
+                    dapp_name = alert.dapp.name
+                    dapp_code = alert.dapp.authentication_code
+                    if not filtered.get(email):
+                        filtered[email] = {}
+                    if not filtered[email].get(dapp_name):
+                        # filtered[email][dapp_name] = []
+                        filtered[email][dapp_name] = dict(authentication_code=dapp_code, logs=[])
+
+                    # filtered[email][dapp_name].append(log)
+                    filtered[email][dapp_name].get('logs').append(log)
+
+    return filtered
